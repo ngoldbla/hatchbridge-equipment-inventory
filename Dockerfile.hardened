@@ -123,8 +123,8 @@ LABEL org.opencontainers.image.source="https://github.com/sysadminsmedia/homebox
 EXPOSE 7745
 WORKDIR /app
 
-# Persist volume for data
-VOLUME [ "/data" ]
+# Data lives under /data. Do not declare Docker VOLUME here (Railway bans it);
+# configure a Railway volume mounted at /data instead.
 
 # Entrypoint and CMD
 USER 65532
