@@ -97,8 +97,8 @@ WORKDIR /app
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD sh -c 'port="${HBOX_WEB_PORT:-}"; if [ -z "$port" ]; then port="${PORT:-7745}"; fi; wget --no-verbose --tries=1 -O - "http://localhost:${port}/api/v1/status" >/dev/null 2>&1 || exit 1'
 
-# Persist volume
-VOLUME [ "/data" ]
+# Data lives under /data. Do not declare Docker VOLUME here (Railway bans it);
+# configure a Railway volume mounted at /data instead.
 
 # Entrypoint and CMD
 ENTRYPOINT [ "/entrypoint.sh" ]
