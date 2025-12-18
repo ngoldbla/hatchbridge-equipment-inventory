@@ -31,8 +31,8 @@ RUN go mod download
 
 # Build API stage
 FROM public.ecr.aws/docker/library/golang:alpine AS builder
-ARG TARGETOS
-ARG TARGETARCH
+ARG TARGETOS=linux
+ARG TARGETARCH=amd64
 ARG BUILD_TIME
 ARG COMMIT
 ARG VERSION
@@ -76,10 +76,14 @@ ENV HBOX_DATABASE_SQLITE_PATH=/data/homebox.db?_pragma=busy_timeout=2000&_pragma
 RUN apk --no-cache add ca-certificates wget && \
     if [ "$TARGETARCH" != "arm" ] || [ "$TARGETARCH" != "riscv64" ]; then apk --no-cache add libwebp libavif libheif libjxl; fi
 
-# Create application directory and copy over built Go binary
-RUN mkdir /app
+# Create application directories and copy over built Go binary
+RUN mkdir -p /app /data
 COPY --from=builder /go/bin/api /app
 RUN chmod +x /app/api
+
+# Runtime entrypoint (maps Railway's $PORT -> HBOX_WEB_PORT)
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Labels and configuration for the final image
 LABEL Name=homebox Version=0.0.1
@@ -91,11 +95,11 @@ WORKDIR /app
 
 # Healthcheck configuration
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD [ "wget", "--no-verbose", "--tries=1", "-O", "-", "http://localhost:7745/api/v1/status" ]
+    CMD sh -c 'port="${HBOX_WEB_PORT:-}"; if [ -z "$port" ]; then port="${PORT:-7745}"; fi; wget --no-verbose --tries=1 -O - "http://localhost:${port}/api/v1/status" >/dev/null 2>&1 || exit 1'
 
 # Persist volume
 VOLUME [ "/data" ]
 
 # Entrypoint and CMD
-ENTRYPOINT [ "/app/api" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "/data/config.yml" ]

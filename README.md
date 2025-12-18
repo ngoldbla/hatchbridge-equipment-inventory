@@ -69,6 +69,14 @@ docker run -d \
 # ghcr.io/sysadminsmedia/homebox:latest-hardened
 ```
 
+## Deploy on Railway
+
+This repo includes a `Dockerfile` that Railway can build and run directly. Railway injects a `PORT` env var at runtime; the container entrypoint maps that to `HBOX_WEB_PORT` automatically.
+
+1. Create a new Railway project from this GitHub repo.
+2. (Recommended) Add a Railway Volume mounted at `/data` to persist the SQLite database and uploads.
+3. Deploy, then open the generated domain.
+
 <!-- CONTRIBUTING -->
 
 ## Contributing
