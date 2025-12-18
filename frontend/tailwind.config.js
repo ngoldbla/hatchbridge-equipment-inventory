@@ -3,6 +3,7 @@ export default {
   darkMode: ["class"],
   safelist: [
     "dark",
+    "theme-hatchbridge",
     "theme-aqua",
     "theme-black",
     "theme-bumblebee",
@@ -43,6 +44,25 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: [
+          '"Nunito Sans"',
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Segoe UI"',
+          "Roboto",
+          '"Helvetica Neue"',
+          "Arial",
+          '"Noto Sans"',
+          '"Apple Color Emoji"',
+          '"Segoe UI Emoji"',
+          '"Segoe UI Symbol"',
+          '"Noto Color Emoji"',
+        ],
+        display: ['"Changa One"', '"Nunito Sans"', "ui-sans-serif", "system-ui"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

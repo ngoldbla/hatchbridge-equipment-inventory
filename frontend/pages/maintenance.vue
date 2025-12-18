@@ -10,7 +10,7 @@
     middleware: ["auth"],
   });
   useHead({
-    title: "HomeBox | " + t("menu.maintenance"),
+    title: "Hatchbridge Inventory | " + t("menu.maintenance"),
   });
 </script>
 

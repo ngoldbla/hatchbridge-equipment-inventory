@@ -16,7 +16,7 @@
     layout: false,
   });
   useHead({
-    title: "HomeBox | " + t("reports.label_generator.title"),
+    title: "Hatchbridge Inventory | " + t("reports.label_generator.title"),
   });
 
   const api = useUserApi();
@@ -337,7 +337,7 @@
   <div class="print:hidden">
     <Toaster />
     <div class="container prose mx-auto max-w-4xl p-4 pt-6">
-      <h1>HomeBox {{ $t("reports.label_generator.title") }}</h1>
+      <h1>Hatchbridge Inventory {{ $t("reports.label_generator.title") }}</h1>
       <p>
         {{ $t("reports.label_generator.instruction_1") }}
       </p>
@@ -439,7 +439,7 @@
           </div>
           <div class="ml-2 flex flex-col justify-center">
             <div class="font-bold">{{ item.assetID }}</div>
-            <div class="text-xs font-light italic">HomeBox</div>
+            <div class="text-xs font-light italic">Hatchbridge Inventory</div>
             <div class="overflow-hidden text-wrap text-xs">{{ item.name }}</div>
             <div class="text-xs">{{ item.location }}</div>
           </div>

@@ -1,20 +1,16 @@
 <script setup lang="ts">
   import { useI18n } from "vue-i18n";
   import { toast } from "@/components/ui/sonner";
-  import MdiGithub from "~icons/mdi/github";
-  import MdiDiscord from "~icons/mdi/discord";
   import MdiFolder from "~icons/mdi/folder";
   import MdiAccount from "~icons/mdi/account";
   import MdiAccountPlus from "~icons/mdi/account-plus";
   import MdiLogin from "~icons/mdi/login";
   import MdiArrowRight from "~icons/mdi/arrow-right";
   import MdiLock from "~icons/mdi/lock";
-  import MdiMastodon from "~icons/mdi/mastodon";
   import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
   import { Button } from "@/components/ui/button";
   import LanguageSelector from "~/components/App/LanguageSelector.vue";
   import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-  import AppLogo from "~/components/App/Logo.vue";
   import FormTextField from "~/components/Form/TextField.vue";
   import FormPassword from "~/components/Form/Password.vue";
   import FormCheckbox from "~/components/Form/Checkbox.vue";
@@ -23,7 +19,7 @@
   const { t } = useI18n();
 
   useHead({
-    title: "HomeBox | " + t("index.title"),
+    title: "Hatchbridge Inventory | " + t("index.title"),
   });
 
   definePageMeta({
@@ -234,9 +230,13 @@
       >
         <div class="z-10">
           <h2 class="mt-1 flex text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            HomeB
-            <AppLogo class="-mb-4 w-12" />
-            x
+            <img
+              src="/brand/hatchbridge-siteid.svg"
+              alt="Hatchbridge"
+              class="h-10 w-auto sm:h-12 lg:h-14"
+              decoding="async"
+            />
+            <span class="ml-3">Inventory</span>
           </h2>
           <p
             class="ml-1 text-lg"
@@ -252,38 +252,11 @@
           <div class="z-10 ml-auto mt-6 flex items-center gap-4 sm:mt-0">
             <Tooltip>
               <TooltipTrigger as-child>
-                <a href="https://github.com/sysadminsmedia/homebox" target="_blank" rel="noopener noreferrer">
-                  <MdiGithub class="size-8" />
-                </a>
-              </TooltipTrigger>
-              <TooltipContent>{{ $t("global.github") }}</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <a href="https://noc.social/@sysadminszone" target="_blank" rel="noopener noreferrer">
-                  <MdiMastodon class="size-8" />
-                </a>
-              </TooltipTrigger>
-              <TooltipContent>{{ $t("global.follow_dev") }}</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <a href="https://discord.gg/aY4DCkpNA9" target="_blank" rel="noopener noreferrer">
-                  <MdiDiscord class="size-8" />
-                </a>
-              </TooltipTrigger>
-              <TooltipContent>{{ $t("global.join_discord") }}</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <a href="https://homebox.software/en/" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.hatchbridge.com/" target="_blank" rel="noopener noreferrer">
                   <MdiFolder class="size-8" />
                 </a>
               </TooltipTrigger>
-              <TooltipContent>{{ $t("global.read_docs") }}</TooltipContent>
+              <TooltipContent>Hatchbridge.com</TooltipContent>
             </Tooltip>
 
             <LanguageSelector class="z-10 text-primary" :expanded="false" />

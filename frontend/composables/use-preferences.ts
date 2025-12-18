@@ -45,7 +45,7 @@ export function useViewPreferences(): Ref<LocationViewPreferences> {
       showEmpty: true,
       editorAdvancedView: false,
       itemDisplayView: "card",
-      theme: "homebox",
+      theme: "hatchbridge",
       itemsPerTablePage: 10,
       displayLegacyHeader: false,
       legacyImageFit: false,

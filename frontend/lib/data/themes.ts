@@ -1,4 +1,5 @@
 export type DaisyTheme =
+  | "hatchbridge"
   | "homebox"
   | "light"
   | "dark"
@@ -37,8 +38,8 @@ export type ThemeOption = {
 
 export const themes: ThemeOption[] = [
   {
-    label: "Homebox",
-    value: "homebox",
+    label: "Hatchbridge",
+    value: "hatchbridge",
   },
   {
     label: "Garden",
