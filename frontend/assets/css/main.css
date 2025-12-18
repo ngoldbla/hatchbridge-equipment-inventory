@@ -8,37 +8,37 @@
   :root,
   .homebox,
   .theme-hatchbridge {
-    /* Hatchbridge brand defaults */
+    /* Hatchbridge brand - Premium slate & gold palette */
     --background: 0 0% 100%;
-    --background-accent: 216 100% 95%;
-    --foreground: 227 100% 7%;
-    --primary: 44 100% 56%;
-    --primary-foreground: 227 100% 7%;
-    --secondary: 219 100% 56%;
-    --secondary-foreground: 0 0% 100%;
-    --accent: 48 100% 88%;
-    --accent-foreground: 227 100% 7%;
-    --muted: 220 13% 91%;
-    --muted-foreground: 220 9% 46%;
+    --background-accent: 220 20% 97%;
+    --foreground: 220 25% 14%;
+    --primary: 220 45% 22%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 42 75% 52%;
+    --secondary-foreground: 220 25% 14%;
+    --accent: 42 45% 94%;
+    --accent-foreground: 220 25% 14%;
+    --muted: 220 15% 93%;
+    --muted-foreground: 220 10% 45%;
     --card: 0 0% 100%;
-    --card-foreground: 227 100% 7%;
+    --card-foreground: 220 25% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 227 100% 7%;
-    --destructive: 0 91% 71%;
-    --destructive-foreground: 0 100% 14%;
-    --input: 216 12% 84%;
-    --border: 216 12% 84%;
-    --ring: 219 100% 56%;
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 227 100% 7%;
-    --sidebar-primary: 44 100% 56%;
-    --sidebar-primary-foreground: 227 100% 7%;
-    --sidebar-accent: 216 100% 95%;
-    --sidebar-accent-foreground: 227 100% 7%;
-    --sidebar-border: 216 12% 84%;
-    --sidebar-ring: 219 100% 56%;
+    --popover-foreground: 220 25% 14%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --input: 220 15% 88%;
+    --border: 220 15% 88%;
+    --ring: 42 75% 52%;
+    --sidebar-background: 220 20% 97%;
+    --sidebar-foreground: 220 25% 14%;
+    --sidebar-primary: 42 75% 52%;
+    --sidebar-primary-foreground: 220 25% 14%;
+    --sidebar-accent: 42 45% 94%;
+    --sidebar-accent-foreground: 220 25% 14%;
+    --sidebar-border: 220 15% 88%;
+    --sidebar-ring: 42 75% 52%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 }
 
   /*

@@ -73,9 +73,11 @@
     "dracula",
     "autumn",
     "acid",
+    "hatchbridge",
   ]);
-  const isEvilForegroundTheme = useIsThemeInList(["light", "aqua", "fantasy", "autumn", "night"]);
+  const isEvilForegroundTheme = useIsThemeInList(["light", "aqua", "fantasy", "autumn", "night", "hatchbridge"]);
   const isLofiTheme = useIsThemeInList(["lofi"]);
+  const isDarkHeaderTheme = useIsThemeInList(["hatchbridge", "lofi"]);
 
   const route = useRoute();
   const router = useRouter();
@@ -225,7 +227,7 @@
         class="mx-auto p-4 sm:flex sm:items-end sm:p-6 lg:p-14"
         :class="{
           'text-accent': !isEvilAccentTheme,
-          'text-white': isLofiTheme,
+          'text-white': isDarkHeaderTheme,
         }"
       >
         <div class="z-10">
@@ -242,7 +244,7 @@
             class="ml-1 text-lg"
             :class="{
               'text-foreground': !isEvilForegroundTheme,
-              'text-white': isLofiTheme,
+              'text-white/80': isDarkHeaderTheme,
             }"
           >
             {{ $t("index.tagline") }}
