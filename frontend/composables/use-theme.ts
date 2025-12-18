@@ -6,7 +6,7 @@ export interface UseTheme {
   setTheme: (theme: DaisyTheme) => void;
 }
 
-const themeRef = ref<DaisyTheme>("garden");
+const themeRef = ref<DaisyTheme>("hatchbridge");
 
 export function useTheme(): UseTheme {
   const preferences = useViewPreferences();
@@ -52,6 +52,8 @@ export function useIsThemeInList(list: DaisyTheme[]) {
 
 export const themes = [
   "dark",
+  "theme-homebox",
+  "theme-hatchbridge",
   "theme-aqua",
   "theme-black",
   "theme-bumblebee",

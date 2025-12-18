@@ -118,7 +118,7 @@
     middleware: ["auth"],
   });
   useHead({
-    title: "HomeBox | " + t("menu.tools"),
+    title: "Hatchbridge Inventory | " + t("menu.tools"),
   });
 
   const { openDialog } = useDialog();

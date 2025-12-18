@@ -39,7 +39,7 @@
     middleware: ["auth"],
   });
   useHead({
-    title: "HomeBox | " + t("menu.profile"),
+    title: "Hatchbridge Inventory | " + t("menu.profile"),
   });
 
   const api = useUserApi();

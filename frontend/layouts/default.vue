@@ -160,6 +160,15 @@
               />
               ~
               <span v-html="DOMPurify.sanitize($t('global.footer.api_link'))" />
+              <span class="mx-1">·</span>
+              <a
+                href="https://www.hatchbridge.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-primary underline hover:text-primary/80"
+              >
+                Hatchbridge
+              </a>
             </p>
           </footer>
         </div>

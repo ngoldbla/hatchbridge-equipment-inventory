@@ -21,7 +21,7 @@
   });
 
   useHead({
-    title: "HomeBox | " + t("menu.locations"),
+    title: "Hatchbridge Inventory | " + t("menu.locations"),
   });
 
   const api = useUserApi();
