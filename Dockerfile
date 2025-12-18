@@ -41,7 +41,7 @@ ARG VERSION
 RUN apk update && \
     apk upgrade && \
     apk add --no-cache git build-base gcc g++ && \
-    if [ "$TARGETARCH" != "arm" ] || [ "$TARGETARCH" != "riscv64" ]; then apk --no-cache add libwebp libavif libheif libjxl; fi
+    if [ "$TARGETARCH" != "arm" ] && [ "$TARGETARCH" != "riscv64" ]; then apk --no-cache add libwebp libavif libheif libjxl; fi
 
 WORKDIR /go/src/app
 
@@ -53,9 +53,8 @@ COPY ./backend .
 RUN rm -rf ./app/api/public
 COPY --from=frontend-builder /app/.output/public ./app/api/static/public
 
-# Use cache for Go build artifacts
-RUN --mount=type=cache,id=go-build-cache,target=/root/.cache/go-build \
-    if [ "$TARGETARCH" = "arm" ] || [ "$TARGETARCH" = "riscv64" ];  \
+# Build Go binary (cache mount removed for Railway compatibility)
+RUN if [ "$TARGETARCH" = "arm" ] || [ "$TARGETARCH" = "riscv64" ];  \
     then echo "nodynamic" $TARGETOS $TARGETARCH; CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build \
         -ldflags "-s -w -X main.commit=$COMMIT -X main.buildTime=$BUILD_TIME -X main.version=$VERSION" \
         -tags nodynamic -o /go/bin/api -v ./app/api/*.go; \
@@ -67,6 +66,7 @@ RUN --mount=type=cache,id=go-build-cache,target=/root/.cache/go-build \
 
 # Production stage
 FROM public.ecr.aws/docker/library/alpine:latest
+ARG TARGETARCH=amd64
 ENV HBOX_MODE=production
 ENV HBOX_STORAGE_CONN_STRING=file:///?no_tmp_dir=true
 ENV HBOX_STORAGE_PREFIX_PATH=data
@@ -74,7 +74,7 @@ ENV HBOX_DATABASE_SQLITE_PATH=/data/homebox.db?_pragma=busy_timeout=2000&_pragma
 
 # Install necessary runtime dependencies
 RUN apk --no-cache add ca-certificates wget && \
-    if [ "$TARGETARCH" != "arm" ] || [ "$TARGETARCH" != "riscv64" ]; then apk --no-cache add libwebp libavif libheif libjxl; fi
+    if [ "$TARGETARCH" != "arm" ] && [ "$TARGETARCH" != "riscv64" ]; then apk --no-cache add libwebp libavif libheif libjxl; fi
 
 # Create application directories and copy over built Go binary
 RUN mkdir -p /app /data
