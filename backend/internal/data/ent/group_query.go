@@ -13,11 +13,13 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/borrower"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/item"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemtemplate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/label"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/location"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
@@ -38,6 +40,8 @@ type GroupQuery struct {
 	withInvitationTokens *GroupInvitationTokenQuery
 	withNotifiers        *NotifierQuery
 	withItemTemplates    *ItemTemplateQuery
+	withBorrowers        *BorrowerQuery
+	withLoans            *LoanQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -221,6 +225,50 @@ func (_q *GroupQuery) QueryItemTemplates() *ItemTemplateQuery {
 			sqlgraph.From(group.Table, group.FieldID, selector),
 			sqlgraph.To(itemtemplate.Table, itemtemplate.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, group.ItemTemplatesTable, group.ItemTemplatesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBorrowers chains the current query on the "borrowers" edge.
+func (_q *GroupQuery) QueryBorrowers() *BorrowerQuery {
+	query := (&BorrowerClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, selector),
+			sqlgraph.To(borrower.Table, borrower.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.BorrowersTable, group.BorrowersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLoans chains the current query on the "loans" edge.
+func (_q *GroupQuery) QueryLoans() *LoanQuery {
+	query := (&LoanClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, selector),
+			sqlgraph.To(loan.Table, loan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.LoansTable, group.LoansColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -427,6 +475,8 @@ func (_q *GroupQuery) Clone() *GroupQuery {
 		withInvitationTokens: _q.withInvitationTokens.Clone(),
 		withNotifiers:        _q.withNotifiers.Clone(),
 		withItemTemplates:    _q.withItemTemplates.Clone(),
+		withBorrowers:        _q.withBorrowers.Clone(),
+		withLoans:            _q.withLoans.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -510,6 +560,28 @@ func (_q *GroupQuery) WithItemTemplates(opts ...func(*ItemTemplateQuery)) *Group
 	return _q
 }
 
+// WithBorrowers tells the query-builder to eager-load the nodes that are connected to
+// the "borrowers" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GroupQuery) WithBorrowers(opts ...func(*BorrowerQuery)) *GroupQuery {
+	query := (&BorrowerClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withBorrowers = query
+	return _q
+}
+
+// WithLoans tells the query-builder to eager-load the nodes that are connected to
+// the "loans" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GroupQuery) WithLoans(opts ...func(*LoanQuery)) *GroupQuery {
+	query := (&LoanClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withLoans = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -588,7 +660,7 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 	var (
 		nodes       = []*Group{}
 		_spec       = _q.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [9]bool{
 			_q.withUsers != nil,
 			_q.withLocations != nil,
 			_q.withItems != nil,
@@ -596,6 +668,8 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 			_q.withInvitationTokens != nil,
 			_q.withNotifiers != nil,
 			_q.withItemTemplates != nil,
+			_q.withBorrowers != nil,
+			_q.withLoans != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -664,6 +738,20 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 		if err := _q.loadItemTemplates(ctx, query, nodes,
 			func(n *Group) { n.Edges.ItemTemplates = []*ItemTemplate{} },
 			func(n *Group, e *ItemTemplate) { n.Edges.ItemTemplates = append(n.Edges.ItemTemplates, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withBorrowers; query != nil {
+		if err := _q.loadBorrowers(ctx, query, nodes,
+			func(n *Group) { n.Edges.Borrowers = []*Borrower{} },
+			func(n *Group, e *Borrower) { n.Edges.Borrowers = append(n.Edges.Borrowers, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withLoans; query != nil {
+		if err := _q.loadLoans(ctx, query, nodes,
+			func(n *Group) { n.Edges.Loans = []*Loan{} },
+			func(n *Group, e *Loan) { n.Edges.Loans = append(n.Edges.Loans, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -881,6 +969,68 @@ func (_q *GroupQuery) loadItemTemplates(ctx context.Context, query *ItemTemplate
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "group_item_templates" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GroupQuery) loadBorrowers(ctx context.Context, query *BorrowerQuery, nodes []*Group, init func(*Group), assign func(*Group, *Borrower)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Group)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Borrower(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(group.BorrowersColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.group_borrowers
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "group_borrowers" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "group_borrowers" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GroupQuery) loadLoans(ctx context.Context, query *LoanQuery, nodes []*Group, init func(*Group), assign func(*Group, *Loan)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Group)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Loan(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(group.LoansColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.group_loans
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "group_loans" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "group_loans" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -18,6 +18,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/item"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/label"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/location"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
@@ -38,6 +39,7 @@ type ItemQuery struct {
 	withFields             *ItemFieldQuery
 	withMaintenanceEntries *MaintenanceEntryQuery
 	withAttachments        *AttachmentQuery
+	withLoans              *LoanQuery
 	withFKs                bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -251,6 +253,28 @@ func (_q *ItemQuery) QueryAttachments() *AttachmentQuery {
 	return query
 }
 
+// QueryLoans chains the current query on the "loans" edge.
+func (_q *ItemQuery) QueryLoans() *LoanQuery {
+	query := (&LoanClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(item.Table, item.FieldID, selector),
+			sqlgraph.To(loan.Table, loan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, item.LoansTable, item.LoansColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Item entity from the query.
 // Returns a *NotFoundError when no Item was found.
 func (_q *ItemQuery) First(ctx context.Context) (*Item, error) {
@@ -451,6 +475,7 @@ func (_q *ItemQuery) Clone() *ItemQuery {
 		withFields:             _q.withFields.Clone(),
 		withMaintenanceEntries: _q.withMaintenanceEntries.Clone(),
 		withAttachments:        _q.withAttachments.Clone(),
+		withLoans:              _q.withLoans.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -545,6 +570,17 @@ func (_q *ItemQuery) WithAttachments(opts ...func(*AttachmentQuery)) *ItemQuery 
 	return _q
 }
 
+// WithLoans tells the query-builder to eager-load the nodes that are connected to
+// the "loans" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ItemQuery) WithLoans(opts ...func(*LoanQuery)) *ItemQuery {
+	query := (&LoanClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withLoans = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -624,7 +660,7 @@ func (_q *ItemQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Item, e
 		nodes       = []*Item{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [9]bool{
 			_q.withGroup != nil,
 			_q.withParent != nil,
 			_q.withChildren != nil,
@@ -633,6 +669,7 @@ func (_q *ItemQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Item, e
 			_q.withFields != nil,
 			_q.withMaintenanceEntries != nil,
 			_q.withAttachments != nil,
+			_q.withLoans != nil,
 		}
 	)
 	if _q.withGroup != nil || _q.withParent != nil || _q.withLocation != nil {
@@ -709,6 +746,13 @@ func (_q *ItemQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Item, e
 		if err := _q.loadAttachments(ctx, query, nodes,
 			func(n *Item) { n.Edges.Attachments = []*Attachment{} },
 			func(n *Item, e *Attachment) { n.Edges.Attachments = append(n.Edges.Attachments, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withLoans; query != nil {
+		if err := _q.loadLoans(ctx, query, nodes,
+			func(n *Item) { n.Edges.Loans = []*Loan{} },
+			func(n *Item, e *Loan) { n.Edges.Loans = append(n.Edges.Loans, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -990,6 +1034,37 @@ func (_q *ItemQuery) loadAttachments(ctx context.Context, query *AttachmentQuery
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "item_attachments" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ItemQuery) loadLoans(ctx context.Context, query *LoanQuery, nodes []*Item, init func(*Item), assign func(*Item, *Loan)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Item)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Loan(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(item.LoansColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.item_loans
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "item_loans" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "item_loans" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

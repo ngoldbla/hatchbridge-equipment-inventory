@@ -165,6 +165,28 @@ func (a *app) mountRoutes(r *chi.Mux, chain *errchain.ErrChain, repos *repo.AllR
 		r.Delete("/notifiers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleDeleteNotifier(), userMW...))
 		r.Post("/notifiers/test", chain.ToHandlerFunc(v1Ctrl.HandlerNotifierTest(), userMW...))
 
+		// Borrowers
+		r.Get("/borrowers", chain.ToHandlerFunc(v1Ctrl.HandleBorrowersGetAll(), userMW...))
+		r.Get("/borrowers/active", chain.ToHandlerFunc(v1Ctrl.HandleBorrowersGetActive(), userMW...))
+		r.Post("/borrowers", chain.ToHandlerFunc(v1Ctrl.HandleBorrowersCreate(), userMW...))
+		r.Get("/borrowers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleBorrowerGet(), userMW...))
+		r.Put("/borrowers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleBorrowerUpdate(), userMW...))
+		r.Delete("/borrowers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleBorrowerDelete(), userMW...))
+		r.Get("/borrowers/{id}/loans", chain.ToHandlerFunc(v1Ctrl.HandleBorrowerLoans(), userMW...))
+
+		// Loans (Equipment Checkout/Return)
+		r.Get("/loans", chain.ToHandlerFunc(v1Ctrl.HandleLoansGetActive(), userMW...))
+		r.Get("/loans/overdue", chain.ToHandlerFunc(v1Ctrl.HandleLoansGetOverdue(), userMW...))
+		r.Post("/loans", chain.ToHandlerFunc(v1Ctrl.HandleLoanCreate(), userMW...))
+		r.Get("/loans/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLoanGet(), userMW...))
+		r.Put("/loans/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLoanUpdate(), userMW...))
+		r.Delete("/loans/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLoanDelete(), userMW...))
+		r.Post("/loans/{id}/return", chain.ToHandlerFunc(v1Ctrl.HandleLoanReturn(), userMW...))
+
+		// Item Loan History
+		r.Get("/items/{id}/loans", chain.ToHandlerFunc(v1Ctrl.HandleItemLoans(), userMW...))
+		r.Get("/items/{id}/current-loan", chain.ToHandlerFunc(v1Ctrl.HandleItemCurrentLoan(), userMW...))
+
 		// Asset-Like endpoints
 		assetMW := []errchain.Middleware{
 			a.mwAuthToken,

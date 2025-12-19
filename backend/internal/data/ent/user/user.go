@@ -44,6 +44,10 @@ const (
 	EdgeAuthTokens = "auth_tokens"
 	// EdgeNotifiers holds the string denoting the notifiers edge name in mutations.
 	EdgeNotifiers = "notifiers"
+	// EdgeCheckouts holds the string denoting the checkouts edge name in mutations.
+	EdgeCheckouts = "checkouts"
+	// EdgeReturns holds the string denoting the returns edge name in mutations.
+	EdgeReturns = "returns"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// GroupTable is the table that holds the group relation/edge.
@@ -67,6 +71,20 @@ const (
 	NotifiersInverseTable = "notifiers"
 	// NotifiersColumn is the table column denoting the notifiers relation/edge.
 	NotifiersColumn = "user_id"
+	// CheckoutsTable is the table that holds the checkouts relation/edge.
+	CheckoutsTable = "loans"
+	// CheckoutsInverseTable is the table name for the Loan entity.
+	// It exists in this package in order to avoid circular dependency with the "loan" package.
+	CheckoutsInverseTable = "loans"
+	// CheckoutsColumn is the table column denoting the checkouts relation/edge.
+	CheckoutsColumn = "user_checkouts"
+	// ReturnsTable is the table that holds the returns relation/edge.
+	ReturnsTable = "loans"
+	// ReturnsInverseTable is the table name for the Loan entity.
+	// It exists in this package in order to avoid circular dependency with the "loan" package.
+	ReturnsInverseTable = "loans"
+	// ReturnsColumn is the table column denoting the returns relation/edge.
+	ReturnsColumn = "user_returns"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -250,6 +268,34 @@ func ByNotifiers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newNotifiersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByCheckoutsCount orders the results by checkouts count.
+func ByCheckoutsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCheckoutsStep(), opts...)
+	}
+}
+
+// ByCheckouts orders the results by checkouts terms.
+func ByCheckouts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCheckoutsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByReturnsCount orders the results by returns count.
+func ByReturnsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newReturnsStep(), opts...)
+	}
+}
+
+// ByReturns orders the results by returns terms.
+func ByReturns(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newReturnsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newGroupStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -269,5 +315,19 @@ func newNotifiersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(NotifiersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, NotifiersTable, NotifiersColumn),
+	)
+}
+func newCheckoutsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CheckoutsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CheckoutsTable, CheckoutsColumn),
+	)
+}
+func newReturnsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ReturnsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ReturnsTable, ReturnsColumn),
 	)
 }

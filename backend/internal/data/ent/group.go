@@ -48,9 +48,13 @@ type GroupEdges struct {
 	Notifiers []*Notifier `json:"notifiers,omitempty"`
 	// ItemTemplates holds the value of the item_templates edge.
 	ItemTemplates []*ItemTemplate `json:"item_templates,omitempty"`
+	// Borrowers holds the value of the borrowers edge.
+	Borrowers []*Borrower `json:"borrowers,omitempty"`
+	// Loans holds the value of the loans edge.
+	Loans []*Loan `json:"loans,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [9]bool
 }
 
 // UsersOrErr returns the Users value or an error if the edge
@@ -114,6 +118,24 @@ func (e GroupEdges) ItemTemplatesOrErr() ([]*ItemTemplate, error) {
 		return e.ItemTemplates, nil
 	}
 	return nil, &NotLoadedError{edge: "item_templates"}
+}
+
+// BorrowersOrErr returns the Borrowers value or an error if the edge
+// was not loaded in eager-loading.
+func (e GroupEdges) BorrowersOrErr() ([]*Borrower, error) {
+	if e.loadedTypes[7] {
+		return e.Borrowers, nil
+	}
+	return nil, &NotLoadedError{edge: "borrowers"}
+}
+
+// LoansOrErr returns the Loans value or an error if the edge
+// was not loaded in eager-loading.
+func (e GroupEdges) LoansOrErr() ([]*Loan, error) {
+	if e.loadedTypes[8] {
+		return e.Loans, nil
+	}
+	return nil, &NotLoadedError{edge: "loans"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -218,6 +240,16 @@ func (_m *Group) QueryNotifiers() *NotifierQuery {
 // QueryItemTemplates queries the "item_templates" edge of the Group entity.
 func (_m *Group) QueryItemTemplates() *ItemTemplateQuery {
 	return NewGroupClient(_m.config).QueryItemTemplates(_m)
+}
+
+// QueryBorrowers queries the "borrowers" edge of the Group entity.
+func (_m *Group) QueryBorrowers() *BorrowerQuery {
+	return NewGroupClient(_m.config).QueryBorrowers(_m)
+}
+
+// QueryLoans queries the "loans" edge of the Group entity.
+func (_m *Group) QueryLoans() *LoanQuery {
+	return NewGroupClient(_m.config).QueryLoans(_m)
 }
 
 // Update returns a builder for updating this Group.

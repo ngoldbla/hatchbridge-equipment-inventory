@@ -45,6 +45,18 @@ func (f AuthTokensFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AuthTokensMutation", m)
 }
 
+// The BorrowerFunc type is an adapter to allow the use of ordinary
+// function as Borrower mutator.
+type BorrowerFunc func(context.Context, *ent.BorrowerMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f BorrowerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.BorrowerMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BorrowerMutation", m)
+}
+
 // The GroupFunc type is an adapter to allow the use of ordinary
 // function as Group mutator.
 type GroupFunc func(context.Context, *ent.GroupMutation) (ent.Value, error)
@@ -115,6 +127,18 @@ func (f LabelFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LabelMutation", m)
+}
+
+// The LoanFunc type is an adapter to allow the use of ordinary
+// function as Loan mutator.
+type LoanFunc func(context.Context, *ent.LoanMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LoanFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LoanMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LoanMutation", m)
 }
 
 // The LocationFunc type is an adapter to allow the use of ordinary

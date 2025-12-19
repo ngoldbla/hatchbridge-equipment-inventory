@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authtokens"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
@@ -229,6 +230,36 @@ func (_u *UserUpdate) AddNotifiers(v ...*Notifier) *UserUpdate {
 	return _u.AddNotifierIDs(ids...)
 }
 
+// AddCheckoutIDs adds the "checkouts" edge to the Loan entity by IDs.
+func (_u *UserUpdate) AddCheckoutIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddCheckoutIDs(ids...)
+	return _u
+}
+
+// AddCheckouts adds the "checkouts" edges to the Loan entity.
+func (_u *UserUpdate) AddCheckouts(v ...*Loan) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCheckoutIDs(ids...)
+}
+
+// AddReturnIDs adds the "returns" edge to the Loan entity by IDs.
+func (_u *UserUpdate) AddReturnIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddReturnIDs(ids...)
+	return _u
+}
+
+// AddReturns adds the "returns" edges to the Loan entity.
+func (_u *UserUpdate) AddReturns(v ...*Loan) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddReturnIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
@@ -280,6 +311,48 @@ func (_u *UserUpdate) RemoveNotifiers(v ...*Notifier) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveNotifierIDs(ids...)
+}
+
+// ClearCheckouts clears all "checkouts" edges to the Loan entity.
+func (_u *UserUpdate) ClearCheckouts() *UserUpdate {
+	_u.mutation.ClearCheckouts()
+	return _u
+}
+
+// RemoveCheckoutIDs removes the "checkouts" edge to Loan entities by IDs.
+func (_u *UserUpdate) RemoveCheckoutIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveCheckoutIDs(ids...)
+	return _u
+}
+
+// RemoveCheckouts removes "checkouts" edges to Loan entities.
+func (_u *UserUpdate) RemoveCheckouts(v ...*Loan) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCheckoutIDs(ids...)
+}
+
+// ClearReturns clears all "returns" edges to the Loan entity.
+func (_u *UserUpdate) ClearReturns() *UserUpdate {
+	_u.mutation.ClearReturns()
+	return _u
+}
+
+// RemoveReturnIDs removes the "returns" edge to Loan entities by IDs.
+func (_u *UserUpdate) RemoveReturnIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveReturnIDs(ids...)
+	return _u
+}
+
+// RemoveReturns removes "returns" edges to Loan entities.
+func (_u *UserUpdate) RemoveReturns(v ...*Loan) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReturnIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -519,6 +592,96 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.CheckoutsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutsTable,
+			Columns: []string{user.CheckoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCheckoutsIDs(); len(nodes) > 0 && !_u.mutation.CheckoutsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutsTable,
+			Columns: []string{user.CheckoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CheckoutsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutsTable,
+			Columns: []string{user.CheckoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ReturnsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ReturnsTable,
+			Columns: []string{user.ReturnsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedReturnsIDs(); len(nodes) > 0 && !_u.mutation.ReturnsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ReturnsTable,
+			Columns: []string{user.ReturnsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReturnsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ReturnsTable,
+			Columns: []string{user.ReturnsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -736,6 +899,36 @@ func (_u *UserUpdateOne) AddNotifiers(v ...*Notifier) *UserUpdateOne {
 	return _u.AddNotifierIDs(ids...)
 }
 
+// AddCheckoutIDs adds the "checkouts" edge to the Loan entity by IDs.
+func (_u *UserUpdateOne) AddCheckoutIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddCheckoutIDs(ids...)
+	return _u
+}
+
+// AddCheckouts adds the "checkouts" edges to the Loan entity.
+func (_u *UserUpdateOne) AddCheckouts(v ...*Loan) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCheckoutIDs(ids...)
+}
+
+// AddReturnIDs adds the "returns" edge to the Loan entity by IDs.
+func (_u *UserUpdateOne) AddReturnIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddReturnIDs(ids...)
+	return _u
+}
+
+// AddReturns adds the "returns" edges to the Loan entity.
+func (_u *UserUpdateOne) AddReturns(v ...*Loan) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddReturnIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
@@ -787,6 +980,48 @@ func (_u *UserUpdateOne) RemoveNotifiers(v ...*Notifier) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveNotifierIDs(ids...)
+}
+
+// ClearCheckouts clears all "checkouts" edges to the Loan entity.
+func (_u *UserUpdateOne) ClearCheckouts() *UserUpdateOne {
+	_u.mutation.ClearCheckouts()
+	return _u
+}
+
+// RemoveCheckoutIDs removes the "checkouts" edge to Loan entities by IDs.
+func (_u *UserUpdateOne) RemoveCheckoutIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveCheckoutIDs(ids...)
+	return _u
+}
+
+// RemoveCheckouts removes "checkouts" edges to Loan entities.
+func (_u *UserUpdateOne) RemoveCheckouts(v ...*Loan) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCheckoutIDs(ids...)
+}
+
+// ClearReturns clears all "returns" edges to the Loan entity.
+func (_u *UserUpdateOne) ClearReturns() *UserUpdateOne {
+	_u.mutation.ClearReturns()
+	return _u
+}
+
+// RemoveReturnIDs removes the "returns" edge to Loan entities by IDs.
+func (_u *UserUpdateOne) RemoveReturnIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveReturnIDs(ids...)
+	return _u
+}
+
+// RemoveReturns removes "returns" edges to Loan entities.
+func (_u *UserUpdateOne) RemoveReturns(v ...*Loan) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReturnIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1049,6 +1284,96 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(notifier.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CheckoutsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutsTable,
+			Columns: []string{user.CheckoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCheckoutsIDs(); len(nodes) > 0 && !_u.mutation.CheckoutsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutsTable,
+			Columns: []string{user.CheckoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CheckoutsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutsTable,
+			Columns: []string{user.CheckoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ReturnsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ReturnsTable,
+			Columns: []string{user.ReturnsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedReturnsIDs(); len(nodes) > 0 && !_u.mutation.ReturnsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ReturnsTable,
+			Columns: []string{user.ReturnsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReturnsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ReturnsTable,
+			Columns: []string{user.ReturnsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

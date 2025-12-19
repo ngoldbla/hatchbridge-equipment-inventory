@@ -120,5 +120,6 @@ func (Item) Edges() []ent.Edge {
 		owned("fields", ItemField.Type),
 		owned("maintenance_entries", MaintenanceEntry.Type),
 		owned("attachments", Attachment.Type),
+		edge.To("loans", Loan.Type),
 	}
 }

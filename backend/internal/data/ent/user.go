@@ -56,9 +56,13 @@ type UserEdges struct {
 	AuthTokens []*AuthTokens `json:"auth_tokens,omitempty"`
 	// Notifiers holds the value of the notifiers edge.
 	Notifiers []*Notifier `json:"notifiers,omitempty"`
+	// Checkouts holds the value of the checkouts edge.
+	Checkouts []*Loan `json:"checkouts,omitempty"`
+	// Returns holds the value of the returns edge.
+	Returns []*Loan `json:"returns,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [5]bool
 }
 
 // GroupOrErr returns the Group value or an error if the edge
@@ -88,6 +92,24 @@ func (e UserEdges) NotifiersOrErr() ([]*Notifier, error) {
 		return e.Notifiers, nil
 	}
 	return nil, &NotLoadedError{edge: "notifiers"}
+}
+
+// CheckoutsOrErr returns the Checkouts value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CheckoutsOrErr() ([]*Loan, error) {
+	if e.loadedTypes[3] {
+		return e.Checkouts, nil
+	}
+	return nil, &NotLoadedError{edge: "checkouts"}
+}
+
+// ReturnsOrErr returns the Returns value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ReturnsOrErr() ([]*Loan, error) {
+	if e.loadedTypes[4] {
+		return e.Returns, nil
+	}
+	return nil, &NotLoadedError{edge: "returns"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -228,6 +250,16 @@ func (_m *User) QueryAuthTokens() *AuthTokensQuery {
 // QueryNotifiers queries the "notifiers" edge of the User entity.
 func (_m *User) QueryNotifiers() *NotifierQuery {
 	return NewUserClient(_m.config).QueryNotifiers(_m)
+}
+
+// QueryCheckouts queries the "checkouts" edge of the User entity.
+func (_m *User) QueryCheckouts() *LoanQuery {
+	return NewUserClient(_m.config).QueryCheckouts(_m)
+}
+
+// QueryReturns queries the "returns" edge of the User entity.
+func (_m *User) QueryReturns() *LoanQuery {
+	return NewUserClient(_m.config).QueryReturns(_m)
 }
 
 // Update returns a builder for updating this User.

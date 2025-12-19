@@ -700,6 +700,52 @@ func HasNotifiersWith(preds ...predicate.Notifier) predicate.User {
 	})
 }
 
+// HasCheckouts applies the HasEdge predicate on the "checkouts" edge.
+func HasCheckouts() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CheckoutsTable, CheckoutsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCheckoutsWith applies the HasEdge predicate on the "checkouts" edge with a given conditions (other predicates).
+func HasCheckoutsWith(preds ...predicate.Loan) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newCheckoutsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasReturns applies the HasEdge predicate on the "returns" edge.
+func HasReturns() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ReturnsTable, ReturnsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasReturnsWith applies the HasEdge predicate on the "returns" edge with a given conditions (other predicates).
+func HasReturnsWith(preds ...predicate.Loan) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newReturnsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

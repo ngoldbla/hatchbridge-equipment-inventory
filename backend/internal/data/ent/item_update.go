@@ -17,6 +17,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/item"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/label"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/location"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
@@ -579,6 +580,21 @@ func (_u *ItemUpdate) AddAttachments(v ...*Attachment) *ItemUpdate {
 	return _u.AddAttachmentIDs(ids...)
 }
 
+// AddLoanIDs adds the "loans" edge to the Loan entity by IDs.
+func (_u *ItemUpdate) AddLoanIDs(ids ...uuid.UUID) *ItemUpdate {
+	_u.mutation.AddLoanIDs(ids...)
+	return _u
+}
+
+// AddLoans adds the "loans" edges to the Loan entity.
+func (_u *ItemUpdate) AddLoans(v ...*Loan) *ItemUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLoanIDs(ids...)
+}
+
 // Mutation returns the ItemMutation object of the builder.
 func (_u *ItemUpdate) Mutation() *ItemMutation {
 	return _u.mutation
@@ -705,6 +721,27 @@ func (_u *ItemUpdate) RemoveAttachments(v ...*Attachment) *ItemUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAttachmentIDs(ids...)
+}
+
+// ClearLoans clears all "loans" edges to the Loan entity.
+func (_u *ItemUpdate) ClearLoans() *ItemUpdate {
+	_u.mutation.ClearLoans()
+	return _u
+}
+
+// RemoveLoanIDs removes the "loans" edge to Loan entities by IDs.
+func (_u *ItemUpdate) RemoveLoanIDs(ids ...uuid.UUID) *ItemUpdate {
+	_u.mutation.RemoveLoanIDs(ids...)
+	return _u
+}
+
+// RemoveLoans removes "loans" edges to Loan entities.
+func (_u *ItemUpdate) RemoveLoans(v ...*Loan) *ItemUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLoanIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1233,6 +1270,51 @@ func (_u *ItemUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LoansCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   item.LoansTable,
+			Columns: []string{item.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLoansIDs(); len(nodes) > 0 && !_u.mutation.LoansCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   item.LoansTable,
+			Columns: []string{item.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LoansIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   item.LoansTable,
+			Columns: []string{item.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1804,6 +1886,21 @@ func (_u *ItemUpdateOne) AddAttachments(v ...*Attachment) *ItemUpdateOne {
 	return _u.AddAttachmentIDs(ids...)
 }
 
+// AddLoanIDs adds the "loans" edge to the Loan entity by IDs.
+func (_u *ItemUpdateOne) AddLoanIDs(ids ...uuid.UUID) *ItemUpdateOne {
+	_u.mutation.AddLoanIDs(ids...)
+	return _u
+}
+
+// AddLoans adds the "loans" edges to the Loan entity.
+func (_u *ItemUpdateOne) AddLoans(v ...*Loan) *ItemUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLoanIDs(ids...)
+}
+
 // Mutation returns the ItemMutation object of the builder.
 func (_u *ItemUpdateOne) Mutation() *ItemMutation {
 	return _u.mutation
@@ -1930,6 +2027,27 @@ func (_u *ItemUpdateOne) RemoveAttachments(v ...*Attachment) *ItemUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAttachmentIDs(ids...)
+}
+
+// ClearLoans clears all "loans" edges to the Loan entity.
+func (_u *ItemUpdateOne) ClearLoans() *ItemUpdateOne {
+	_u.mutation.ClearLoans()
+	return _u
+}
+
+// RemoveLoanIDs removes the "loans" edge to Loan entities by IDs.
+func (_u *ItemUpdateOne) RemoveLoanIDs(ids ...uuid.UUID) *ItemUpdateOne {
+	_u.mutation.RemoveLoanIDs(ids...)
+	return _u
+}
+
+// RemoveLoans removes "loans" edges to Loan entities.
+func (_u *ItemUpdateOne) RemoveLoans(v ...*Loan) *ItemUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLoanIDs(ids...)
 }
 
 // Where appends a list predicates to the ItemUpdate builder.
@@ -2488,6 +2606,51 @@ func (_u *ItemUpdateOne) sqlSave(ctx context.Context) (_node *Item, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LoansCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   item.LoansTable,
+			Columns: []string{item.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLoansIDs(); len(nodes) > 0 && !_u.mutation.LoansCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   item.LoansTable,
+			Columns: []string{item.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LoansIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   item.LoansTable,
+			Columns: []string{item.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

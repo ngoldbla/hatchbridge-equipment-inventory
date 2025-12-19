@@ -18,6 +18,8 @@ type Tx struct {
 	AuthRoles *AuthRolesClient
 	// AuthTokens is the client for interacting with the AuthTokens builders.
 	AuthTokens *AuthTokensClient
+	// Borrower is the client for interacting with the Borrower builders.
+	Borrower *BorrowerClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
 	// GroupInvitationToken is the client for interacting with the GroupInvitationToken builders.
@@ -30,6 +32,8 @@ type Tx struct {
 	ItemTemplate *ItemTemplateClient
 	// Label is the client for interacting with the Label builders.
 	Label *LabelClient
+	// Loan is the client for interacting with the Loan builders.
+	Loan *LoanClient
 	// Location is the client for interacting with the Location builders.
 	Location *LocationClient
 	// MaintenanceEntry is the client for interacting with the MaintenanceEntry builders.
@@ -174,12 +178,14 @@ func (tx *Tx) init() {
 	tx.Attachment = NewAttachmentClient(tx.config)
 	tx.AuthRoles = NewAuthRolesClient(tx.config)
 	tx.AuthTokens = NewAuthTokensClient(tx.config)
+	tx.Borrower = NewBorrowerClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
 	tx.GroupInvitationToken = NewGroupInvitationTokenClient(tx.config)
 	tx.Item = NewItemClient(tx.config)
 	tx.ItemField = NewItemFieldClient(tx.config)
 	tx.ItemTemplate = NewItemTemplateClient(tx.config)
 	tx.Label = NewLabelClient(tx.config)
+	tx.Loan = NewLoanClient(tx.config)
 	tx.Location = NewLocationClient(tx.config)
 	tx.MaintenanceEntry = NewMaintenanceEntryClient(tx.config)
 	tx.Notifier = NewNotifierClient(tx.config)

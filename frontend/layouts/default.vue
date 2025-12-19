@@ -190,6 +190,8 @@
   import MdiMagnify from "~icons/mdi/magnify";
   import MdiQrcodeScan from "~icons/mdi/qrcode-scan";
   import MdiAccount from "~icons/mdi/account";
+  import MdiAccountGroup from "~icons/mdi/account-group";
+  import MdiPackageVariantClosedCheck from "~icons/mdi/package-variant-closed-check";
   import MdiCog from "~icons/mdi/cog";
   import MdiWrench from "~icons/mdi/wrench";
   import MdiPlus from "~icons/mdi/plus";
@@ -341,6 +343,20 @@
       active: computed(() => route.path === "/items"),
       name: computed(() => t("menu.search")),
       to: "/items",
+    },
+    {
+      icon: MdiAccountGroup,
+      id: 7,
+      active: computed(() => route.path === "/borrowers" || route.path.startsWith("/borrower/")),
+      name: computed(() => "Borrowers"),
+      to: "/borrowers",
+    },
+    {
+      icon: MdiPackageVariantClosedCheck,
+      id: 8,
+      active: computed(() => route.path === "/loans"),
+      name: computed(() => "Loans"),
+      to: "/loans",
     },
     {
       icon: MdiFileDocumentMultiple,

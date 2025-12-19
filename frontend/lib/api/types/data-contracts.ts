@@ -1158,3 +1158,130 @@ export interface ValidateErrorResponse {
   error: string;
   fields: string;
 }
+
+// ============================================
+// Borrower Types (Equipment Lending Feature)
+// ============================================
+
+export interface BorrowerCreate {
+  /** @minLength 1 @maxLength 255 */
+  name: string;
+  /** @maxLength 255 */
+  email: string;
+  /** @maxLength 50 */
+  phone?: string;
+  /** @maxLength 255 */
+  organization?: string;
+  /** @maxLength 100 */
+  studentId?: string;
+  /** @maxLength 1000 */
+  notes?: string;
+}
+
+export interface BorrowerUpdate {
+  id: string;
+  /** @minLength 1 @maxLength 255 */
+  name: string;
+  /** @maxLength 255 */
+  email: string;
+  /** @maxLength 50 */
+  phone?: string;
+  /** @maxLength 255 */
+  organization?: string;
+  /** @maxLength 100 */
+  studentId?: string;
+  /** @maxLength 1000 */
+  notes?: string;
+  isActive: boolean;
+}
+
+export interface BorrowerSummary {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  organization: string;
+  studentId: string;
+  isActive: boolean;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface BorrowerOut {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  organization: string;
+  studentId: string;
+  isActive: boolean;
+  notes: string;
+  activeLoans: number;
+  totalLoans: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+// ============================================
+// Loan Types (Equipment Lending Feature)
+// ============================================
+
+export interface LoanCreate {
+  itemId: string;
+  borrowerId: string;
+  dueAt: Date | string;
+  /** @maxLength 1000 */
+  notes?: string;
+  /** @min 1 */
+  quantity?: number;
+}
+
+export interface LoanUpdate {
+  id: string;
+  dueAt: Date | string;
+  /** @maxLength 1000 */
+  notes?: string;
+}
+
+export interface LoanReturn {
+  id: string;
+  /** @maxLength 1000 */
+  returnNotes?: string;
+}
+
+export interface LoanSummary {
+  id: string;
+  checkedOutAt: Date | string;
+  dueAt: Date | string;
+  returnedAt?: Date | string | null;
+  quantity: number;
+  isOverdue: boolean;
+  itemId: string;
+  itemName: string;
+  borrowerId: string;
+  borrowerName: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface LoanOut {
+  id: string;
+  checkedOutAt: Date | string;
+  dueAt: Date | string;
+  returnedAt?: Date | string | null;
+  quantity: number;
+  isOverdue: boolean;
+  itemId: string;
+  itemName: string;
+  borrowerId: string;
+  borrowerName: string;
+  notes: string;
+  returnNotes: string;
+  itemAssetId: number;
+  borrowerEmail: string;
+  borrowerPhone: string;
+  checkedOutBy?: string | null;
+  returnedBy?: string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}

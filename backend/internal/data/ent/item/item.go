@@ -79,6 +79,8 @@ const (
 	EdgeMaintenanceEntries = "maintenance_entries"
 	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
 	EdgeAttachments = "attachments"
+	// EdgeLoans holds the string denoting the loans edge name in mutations.
+	EdgeLoans = "loans"
 	// Table holds the table name of the item in the database.
 	Table = "items"
 	// GroupTable is the table that holds the group relation/edge.
@@ -129,6 +131,13 @@ const (
 	AttachmentsInverseTable = "attachments"
 	// AttachmentsColumn is the table column denoting the attachments relation/edge.
 	AttachmentsColumn = "item_attachments"
+	// LoansTable is the table that holds the loans relation/edge.
+	LoansTable = "loans"
+	// LoansInverseTable is the table name for the Loan entity.
+	// It exists in this package in order to avoid circular dependency with the "loan" package.
+	LoansInverseTable = "loans"
+	// LoansColumn is the table column denoting the loans relation/edge.
+	LoansColumn = "item_loans"
 )
 
 // Columns holds all SQL columns for item fields.
@@ -452,6 +461,20 @@ func ByAttachments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAttachmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByLoansCount orders the results by loans count.
+func ByLoansCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLoansStep(), opts...)
+	}
+}
+
+// ByLoans orders the results by loans terms.
+func ByLoans(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLoansStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newGroupStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -506,5 +529,12 @@ func newAttachmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AttachmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
+	)
+}
+func newLoansStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LoansInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LoansTable, LoansColumn),
 	)
 }

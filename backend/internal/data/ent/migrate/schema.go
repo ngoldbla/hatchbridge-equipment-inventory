@@ -91,6 +91,51 @@ var (
 			},
 		},
 	}
+	// BorrowersColumns holds the columns for the "borrowers" table.
+	BorrowersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString, Size: 255},
+		{Name: "email", Type: field.TypeString, Size: 255},
+		{Name: "phone", Type: field.TypeString, Nullable: true, Size: 50},
+		{Name: "organization", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "student_id", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 1000},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "group_borrowers", Type: field.TypeUUID},
+	}
+	// BorrowersTable holds the schema information for the "borrowers" table.
+	BorrowersTable = &schema.Table{
+		Name:       "borrowers",
+		Columns:    BorrowersColumns,
+		PrimaryKey: []*schema.Column{BorrowersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "borrowers_groups_borrowers",
+				Columns:    []*schema.Column{BorrowersColumns[10]},
+				RefColumns: []*schema.Column{GroupsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "borrower_name",
+				Unique:  false,
+				Columns: []*schema.Column{BorrowersColumns[3]},
+			},
+			{
+				Name:    "borrower_email",
+				Unique:  false,
+				Columns: []*schema.Column{BorrowersColumns[4]},
+			},
+			{
+				Name:    "borrower_is_active",
+				Unique:  false,
+				Columns: []*schema.Column{BorrowersColumns[9]},
+			},
+		},
+	}
 	// GroupsColumns holds the columns for the "groups" table.
 	GroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -320,6 +365,78 @@ var (
 			},
 		},
 	}
+	// LoansColumns holds the columns for the "loans" table.
+	LoansColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "checked_out_at", Type: field.TypeTime},
+		{Name: "due_at", Type: field.TypeTime},
+		{Name: "returned_at", Type: field.TypeTime, Nullable: true},
+		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 1000},
+		{Name: "return_notes", Type: field.TypeString, Nullable: true, Size: 1000},
+		{Name: "quantity", Type: field.TypeInt, Default: 1},
+		{Name: "borrower_loans", Type: field.TypeUUID},
+		{Name: "group_loans", Type: field.TypeUUID},
+		{Name: "item_loans", Type: field.TypeUUID},
+		{Name: "user_checkouts", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_returns", Type: field.TypeUUID, Nullable: true},
+	}
+	// LoansTable holds the schema information for the "loans" table.
+	LoansTable = &schema.Table{
+		Name:       "loans",
+		Columns:    LoansColumns,
+		PrimaryKey: []*schema.Column{LoansColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "loans_borrowers_loans",
+				Columns:    []*schema.Column{LoansColumns[9]},
+				RefColumns: []*schema.Column{BorrowersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "loans_groups_loans",
+				Columns:    []*schema.Column{LoansColumns[10]},
+				RefColumns: []*schema.Column{GroupsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "loans_items_loans",
+				Columns:    []*schema.Column{LoansColumns[11]},
+				RefColumns: []*schema.Column{ItemsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "loans_users_checkouts",
+				Columns:    []*schema.Column{LoansColumns[12]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "loans_users_returns",
+				Columns:    []*schema.Column{LoansColumns[13]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "loan_checked_out_at",
+				Unique:  false,
+				Columns: []*schema.Column{LoansColumns[3]},
+			},
+			{
+				Name:    "loan_due_at",
+				Unique:  false,
+				Columns: []*schema.Column{LoansColumns[4]},
+			},
+			{
+				Name:    "loan_returned_at",
+				Unique:  false,
+				Columns: []*schema.Column{LoansColumns[5]},
+			},
+		},
+	}
 	// LocationsColumns holds the columns for the "locations" table.
 	LocationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -521,12 +638,14 @@ var (
 		AttachmentsTable,
 		AuthRolesTable,
 		AuthTokensTable,
+		BorrowersTable,
 		GroupsTable,
 		GroupInvitationTokensTable,
 		ItemsTable,
 		ItemFieldsTable,
 		ItemTemplatesTable,
 		LabelsTable,
+		LoansTable,
 		LocationsTable,
 		MaintenanceEntriesTable,
 		NotifiersTable,
@@ -541,6 +660,7 @@ func init() {
 	AttachmentsTable.ForeignKeys[1].RefTable = ItemsTable
 	AuthRolesTable.ForeignKeys[0].RefTable = AuthTokensTable
 	AuthTokensTable.ForeignKeys[0].RefTable = UsersTable
+	BorrowersTable.ForeignKeys[0].RefTable = GroupsTable
 	GroupInvitationTokensTable.ForeignKeys[0].RefTable = GroupsTable
 	ItemsTable.ForeignKeys[0].RefTable = GroupsTable
 	ItemsTable.ForeignKeys[1].RefTable = ItemsTable
@@ -549,6 +669,11 @@ func init() {
 	ItemTemplatesTable.ForeignKeys[0].RefTable = GroupsTable
 	ItemTemplatesTable.ForeignKeys[1].RefTable = LocationsTable
 	LabelsTable.ForeignKeys[0].RefTable = GroupsTable
+	LoansTable.ForeignKeys[0].RefTable = BorrowersTable
+	LoansTable.ForeignKeys[1].RefTable = GroupsTable
+	LoansTable.ForeignKeys[2].RefTable = ItemsTable
+	LoansTable.ForeignKeys[3].RefTable = UsersTable
+	LoansTable.ForeignKeys[4].RefTable = UsersTable
 	LocationsTable.ForeignKeys[0].RefTable = GroupsTable
 	LocationsTable.ForeignKeys[1].RefTable = LocationsTable
 	MaintenanceEntriesTable.ForeignKeys[0].RefTable = ItemsTable
