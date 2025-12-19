@@ -96,6 +96,37 @@ We want to make sure that Homebox is available in as many languages as possible.
 - Original project by [@hay-kot](https://github.com/hay-kot)
 - Logo by [@lakotelman](https://github.com/lakotelman)
 
+---
+
+## Hatchbridge Theme Color Palette
+
+This fork uses a custom **Hatchbridge** theme with a premium slate and gold palette:
+
+| Token | HSL | Hex | Preview | Description |
+|-------|-----|-----|---------|-------------|
+| **Background** | `0 0% 100%` | `#FFFFFF` | ![#FFFFFF](https://via.placeholder.com/20/FFFFFF/FFFFFF) | White background |
+| **Background Accent** | `220 20% 97%` | `#F5F7FA` | ![#F5F7FA](https://via.placeholder.com/20/F5F7FA/F5F7FA) | Light gray-blue for sidebars |
+| **Foreground** | `220 25% 14%` | `#1B2330` | ![#1B2330](https://via.placeholder.com/20/1B2330/1B2330) | Dark slate text |
+| **Primary** | `220 45% 22%` | `#1F3351` | ![#1F3351](https://via.placeholder.com/20/1F3351/1F3351) | Premium slate blue (buttons) |
+| **Primary Foreground** | `0 0% 100%` | `#FFFFFF` | ![#FFFFFF](https://via.placeholder.com/20/FFFFFF/FFFFFF) | White text on primary |
+| **Secondary** | `42 75% 52%` | `#D9A52C` | ![#D9A52C](https://via.placeholder.com/20/D9A52C/D9A52C) | Gold accent (header bar) |
+| **Secondary Foreground** | `220 25% 14%` | `#1B2330` | ![#1B2330](https://via.placeholder.com/20/1B2330/1B2330) | Dark text on gold |
+| **Accent** | `42 45% 94%` | `#F9F5E9` | ![#F9F5E9](https://via.placeholder.com/20/F9F5E9/F9F5E9) | Light gold highlight |
+| **Muted** | `220 15% 93%` | `#ECEEF1` | ![#ECEEF1](https://via.placeholder.com/20/ECEEF1/ECEEF1) | Muted gray |
+| **Muted Foreground** | `220 10% 45%` | `#697382` | ![#697382](https://via.placeholder.com/20/697382/697382) | Secondary text |
+| **Destructive** | `0 72% 51%` | `#DC3545` | ![#DC3545](https://via.placeholder.com/20/DC3545/DC3545) | Error/delete actions |
+| **Ring** | `42 75% 52%` | `#D9A52C` | ![#D9A52C](https://via.placeholder.com/20/D9A52C/D9A52C) | Focus ring (gold) |
+| **Border** | `220 15% 88%` | `#D9DCE2` | ![#D9DCE2](https://via.placeholder.com/20/D9DCE2/D9DCE2) | Border color |
+
+### Brand Colors Summary
+
+- **Slate Blue** `#1F3351` - Primary brand color for buttons and key UI elements
+- **Gold** `#D9A52C` - Accent color matching Hatchbridge brand yellow
+- **White** `#FFFFFF` - Clean backgrounds and logo containers
+
+### Logo Display
+The Hatchbridge logo is displayed with a white background container to ensure visibility across all themes and backgrounds.
+
 ### Contributors
 <a href="https://github.com/sysadminsmedia/homebox/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=sysadminsmedia/homebox" />
