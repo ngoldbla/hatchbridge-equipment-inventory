@@ -20,7 +20,7 @@
             $t("global.welcome", { username: username })
           }}</SidebarGroupLabel>
           <NuxtLink class="group-data-[collapsible=icon]:hidden" to="/home">
-            <div class="flex size-24 items-center justify-center rounded-full bg-background-accent p-4">
+            <div class="flex size-24 items-center justify-center rounded-lg bg-white p-3 shadow-sm">
               <AppLogo />
             </div>
           </NuxtLink>
@@ -121,7 +121,9 @@
             <div class="flex h-1/2 items-center gap-2 sm:h-auto">
               <SidebarTrigger variant="default" />
               <NuxtLink to="/home">
-                <AppHeaderText class="h-6" />
+                <div class="flex items-center rounded bg-white px-2 py-1 shadow-sm">
+                  <AppHeaderText class="h-5" />
+                </div>
               </NuxtLink>
             </div>
             <div class="sm:grow" />

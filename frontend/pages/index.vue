@@ -231,13 +231,15 @@
         }"
       >
         <div class="z-10">
-          <h2 class="mt-1 flex text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            <img
-              src="/brand/hatchbridge-siteid.svg"
-              alt="Hatchbridge"
-              class="h-10 w-auto sm:h-12 lg:h-14"
-              decoding="async"
-            />
+          <h2 class="mt-1 flex items-center text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            <div class="flex items-center justify-center rounded-lg bg-white px-3 py-2 shadow-sm">
+              <img
+                src="/brand/hatchbridge-siteid.svg"
+                alt="Hatchbridge"
+                class="h-8 w-auto sm:h-10 lg:h-12"
+                decoding="async"
+              />
+            </div>
             <span class="ml-3">Inventory</span>
           </h2>
           <p
