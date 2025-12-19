@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authtokens"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 )
@@ -215,6 +216,36 @@ func (_c *UserCreate) AddNotifiers(v ...*Notifier) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddNotifierIDs(ids...)
+}
+
+// AddCheckoutIDs adds the "checkouts" edge to the Loan entity by IDs.
+func (_c *UserCreate) AddCheckoutIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddCheckoutIDs(ids...)
+	return _c
+}
+
+// AddCheckouts adds the "checkouts" edges to the Loan entity.
+func (_c *UserCreate) AddCheckouts(v ...*Loan) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCheckoutIDs(ids...)
+}
+
+// AddReturnIDs adds the "returns" edge to the Loan entity by IDs.
+func (_c *UserCreate) AddReturnIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddReturnIDs(ids...)
+	return _c
+}
+
+// AddReturns adds the "returns" edges to the Loan entity.
+func (_c *UserCreate) AddReturns(v ...*Loan) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddReturnIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -445,6 +476,38 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(notifier.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CheckoutsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutsTable,
+			Columns: []string{user.CheckoutsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ReturnsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ReturnsTable,
+			Columns: []string{user.ReturnsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -74,6 +74,10 @@ func (User) Edges() []ent.Edge {
 			Annotations(entsql.Annotation{
 				OnDelete: entsql.Cascade,
 			}),
+		// Loans this user checked out (as an admin)
+		edge.To("checkouts", Loan.Type),
+		// Loans this user processed returns for (as an admin)
+		edge.To("returns", Loan.Type),
 	}
 }
 

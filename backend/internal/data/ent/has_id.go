@@ -16,6 +16,10 @@ func (_m *AuthTokens) GetID() uuid.UUID {
 	return _m.ID
 }
 
+func (_m *Borrower) GetID() uuid.UUID {
+	return _m.ID
+}
+
 func (_m *Group) GetID() uuid.UUID {
 	return _m.ID
 }
@@ -37,6 +41,10 @@ func (_m *ItemTemplate) GetID() uuid.UUID {
 }
 
 func (_m *Label) GetID() uuid.UUID {
+	return _m.ID
+}
+
+func (_m *Loan) GetID() uuid.UUID {
 	return _m.ID
 }
 

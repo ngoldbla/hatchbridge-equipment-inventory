@@ -35,6 +35,9 @@
   import BaseContainer from "@/components/Base/Container.vue";
   import ItemImageDialog from "~/components/Item/ImageDialog.vue";
   import ItemDuplicateSettings from "~/components/Item/DuplicateSettings.vue";
+  import ItemCheckoutModal from "~/components/Item/CheckoutModal.vue";
+  import ItemReturnModal from "~/components/Item/ReturnModal.vue";
+  import ItemLoanStatusCard from "~/components/Item/LoanStatusCard.vue";
   import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
   import LabelChip from "~/components/Label/Chip.vue";
   import DateTime from "~/components/global/DateTime.vue";
@@ -45,6 +48,7 @@
   import DetailsSection from "~/components/global/DetailsSection/DetailsSection.vue";
   import ItemAttachmentsList from "~/components/Item/AttachmentsList.vue";
   import ItemViewSelectable from "~/components/Item/View/Selectable.vue";
+  import type { LoanOut } from "~~/lib/api/types/data-contracts";
 
   const { t } = useI18n();
 
@@ -84,6 +88,23 @@
   onMounted(() => {
     refresh();
   });
+
+  // Loan status for this item
+  const { data: currentLoan, refresh: refreshLoan, status: loanStatus } = useAsyncData<LoanOut | null>(
+    `loan-${itemId.value}`,
+    async () => {
+      const { data, error } = await api.loans.getItemCurrentLoan(itemId.value);
+      if (error) {
+        return null;
+      }
+      return data;
+    },
+    { watch: [itemId] }
+  );
+
+  function handleLoanRefresh() {
+    refreshLoan();
+  }
 
   const lastRoute = ref(route.fullPath);
   watchEffect(() => {
@@ -761,6 +782,30 @@
       <div class="space-y-6">
         <!-- this renders the other pages content -->
         <NuxtPage :item="item" :page-key="itemId" />
+
+        <!-- Loan Status Card - only shown on details page -->
+        <ItemLoanStatusCard
+          v-if="!hasNested"
+          :loading="loanStatus === 'pending'"
+          :current-loan="currentLoan ?? null"
+          :item-name="item.name"
+          @refresh="handleLoanRefresh"
+        />
+
+        <!-- Checkout Modal -->
+        <ItemCheckoutModal
+          :item-id="item.id"
+          :item-name="item.name"
+          :item-quantity="item.quantity"
+          @created="handleLoanRefresh"
+        />
+
+        <!-- Return Modal -->
+        <ItemReturnModal
+          :loan="currentLoan ?? null"
+          :item-name="item.name"
+          @returned="handleLoanRefresh"
+        />
 
         <!-- anything in this is not rendered if on another page -->
         <BaseCard v-if="!hasNested" collapsable>

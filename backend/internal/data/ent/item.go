@@ -95,9 +95,11 @@ type ItemEdges struct {
 	MaintenanceEntries []*MaintenanceEntry `json:"maintenance_entries,omitempty"`
 	// Attachments holds the value of the attachments edge.
 	Attachments []*Attachment `json:"attachments,omitempty"`
+	// Loans holds the value of the loans edge.
+	Loans []*Loan `json:"loans,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // GroupOrErr returns the Group value or an error if the edge
@@ -176,6 +178,15 @@ func (e ItemEdges) AttachmentsOrErr() ([]*Attachment, error) {
 		return e.Attachments, nil
 	}
 	return nil, &NotLoadedError{edge: "attachments"}
+}
+
+// LoansOrErr returns the Loans value or an error if the edge
+// was not loaded in eager-loading.
+func (e ItemEdges) LoansOrErr() ([]*Loan, error) {
+	if e.loadedTypes[8] {
+		return e.Loans, nil
+	}
+	return nil, &NotLoadedError{edge: "loans"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -438,6 +449,11 @@ func (_m *Item) QueryMaintenanceEntries() *MaintenanceEntryQuery {
 // QueryAttachments queries the "attachments" edge of the Item entity.
 func (_m *Item) QueryAttachments() *AttachmentQuery {
 	return NewItemClient(_m.config).QueryAttachments(_m)
+}
+
+// QueryLoans queries the "loans" edge of the Item entity.
+func (_m *Item) QueryLoans() *LoanQuery {
+	return NewItemClient(_m.config).QueryLoans(_m)
 }
 
 // Update returns a builder for updating this Item.

@@ -15,6 +15,9 @@ type AuthRoles func(*sql.Selector)
 // AuthTokens is the predicate function for authtokens builders.
 type AuthTokens func(*sql.Selector)
 
+// Borrower is the predicate function for borrower builders.
+type Borrower func(*sql.Selector)
+
 // Group is the predicate function for group builders.
 type Group func(*sql.Selector)
 
@@ -32,6 +35,9 @@ type ItemTemplate func(*sql.Selector)
 
 // Label is the predicate function for label builders.
 type Label func(*sql.Selector)
+
+// Loan is the predicate function for loan builders.
+type Loan func(*sql.Selector)
 
 // Location is the predicate function for location builders.
 type Location func(*sql.Selector)

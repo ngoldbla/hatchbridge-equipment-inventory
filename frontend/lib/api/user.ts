@@ -12,6 +12,8 @@ import { NotifiersAPI } from "./classes/notifiers";
 import { MaintenanceAPI } from "./classes/maintenance";
 import { ProductAPI } from "./classes/product";
 import { TemplatesApi } from "./classes/templates";
+import { BorrowersApi } from "./classes/borrowers";
+import { LoansApi } from "./classes/loans";
 import type { Requests } from "~~/lib/requests";
 
 export class UserClient extends BaseAPI {
@@ -28,6 +30,8 @@ export class UserClient extends BaseAPI {
   reports: ReportsAPI;
   notifiers: NotifiersAPI;
   products: ProductAPI;
+  borrowers: BorrowersApi;
+  loans: LoansApi;
 
   constructor(requests: Requests, attachmentToken: string) {
     super(requests, attachmentToken);
@@ -45,6 +49,8 @@ export class UserClient extends BaseAPI {
     this.reports = new ReportsAPI(requests);
     this.notifiers = new NotifiersAPI(requests);
     this.products = new ProductAPI(requests);
+    this.borrowers = new BorrowersApi(requests);
+    this.loans = new LoansApi(requests);
 
     Object.freeze(this);
   }

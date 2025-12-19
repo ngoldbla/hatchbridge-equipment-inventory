@@ -37,6 +37,10 @@ const (
 	EdgeNotifiers = "notifiers"
 	// EdgeItemTemplates holds the string denoting the item_templates edge name in mutations.
 	EdgeItemTemplates = "item_templates"
+	// EdgeBorrowers holds the string denoting the borrowers edge name in mutations.
+	EdgeBorrowers = "borrowers"
+	// EdgeLoans holds the string denoting the loans edge name in mutations.
+	EdgeLoans = "loans"
 	// Table holds the table name of the group in the database.
 	Table = "groups"
 	// UsersTable is the table that holds the users relation/edge.
@@ -88,6 +92,20 @@ const (
 	ItemTemplatesInverseTable = "item_templates"
 	// ItemTemplatesColumn is the table column denoting the item_templates relation/edge.
 	ItemTemplatesColumn = "group_item_templates"
+	// BorrowersTable is the table that holds the borrowers relation/edge.
+	BorrowersTable = "borrowers"
+	// BorrowersInverseTable is the table name for the Borrower entity.
+	// It exists in this package in order to avoid circular dependency with the "borrower" package.
+	BorrowersInverseTable = "borrowers"
+	// BorrowersColumn is the table column denoting the borrowers relation/edge.
+	BorrowersColumn = "group_borrowers"
+	// LoansTable is the table that holds the loans relation/edge.
+	LoansTable = "loans"
+	// LoansInverseTable is the table name for the Loan entity.
+	// It exists in this package in order to avoid circular dependency with the "loan" package.
+	LoansInverseTable = "loans"
+	// LoansColumn is the table column denoting the loans relation/edge.
+	LoansColumn = "group_loans"
 )
 
 // Columns holds all SQL columns for group fields.
@@ -249,6 +267,34 @@ func ByItemTemplates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newItemTemplatesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByBorrowersCount orders the results by borrowers count.
+func ByBorrowersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newBorrowersStep(), opts...)
+	}
+}
+
+// ByBorrowers orders the results by borrowers terms.
+func ByBorrowers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newBorrowersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByLoansCount orders the results by loans count.
+func ByLoansCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLoansStep(), opts...)
+	}
+}
+
+// ByLoans orders the results by loans terms.
+func ByLoans(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLoansStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newUsersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -296,5 +342,19 @@ func newItemTemplatesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ItemTemplatesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ItemTemplatesTable, ItemTemplatesColumn),
+	)
+}
+func newBorrowersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(BorrowersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, BorrowersTable, BorrowersColumn),
+	)
+}
+func newLoansStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LoansInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LoansTable, LoansColumn),
 	)
 }

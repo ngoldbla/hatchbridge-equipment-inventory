@@ -8,12 +8,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/attachment"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authtokens"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/borrower"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/item"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemtemplate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/label"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/location"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
@@ -86,6 +88,81 @@ func init() {
 	authtokensDescID := authtokensMixinFields0[0].Descriptor()
 	// authtokens.DefaultID holds the default value on creation for the id field.
 	authtokens.DefaultID = authtokensDescID.Default.(func() uuid.UUID)
+	borrowerMixin := schema.Borrower{}.Mixin()
+	borrowerMixinFields0 := borrowerMixin[0].Fields()
+	_ = borrowerMixinFields0
+	borrowerFields := schema.Borrower{}.Fields()
+	_ = borrowerFields
+	// borrowerDescCreatedAt is the schema descriptor for created_at field.
+	borrowerDescCreatedAt := borrowerMixinFields0[1].Descriptor()
+	// borrower.DefaultCreatedAt holds the default value on creation for the created_at field.
+	borrower.DefaultCreatedAt = borrowerDescCreatedAt.Default.(func() time.Time)
+	// borrowerDescUpdatedAt is the schema descriptor for updated_at field.
+	borrowerDescUpdatedAt := borrowerMixinFields0[2].Descriptor()
+	// borrower.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	borrower.DefaultUpdatedAt = borrowerDescUpdatedAt.Default.(func() time.Time)
+	// borrower.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	borrower.UpdateDefaultUpdatedAt = borrowerDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// borrowerDescName is the schema descriptor for name field.
+	borrowerDescName := borrowerFields[0].Descriptor()
+	// borrower.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	borrower.NameValidator = func() func(string) error {
+		validators := borrowerDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// borrowerDescEmail is the schema descriptor for email field.
+	borrowerDescEmail := borrowerFields[1].Descriptor()
+	// borrower.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	borrower.EmailValidator = func() func(string) error {
+		validators := borrowerDescEmail.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(email string) error {
+			for _, fn := range fns {
+				if err := fn(email); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// borrowerDescPhone is the schema descriptor for phone field.
+	borrowerDescPhone := borrowerFields[2].Descriptor()
+	// borrower.PhoneValidator is a validator for the "phone" field. It is called by the builders before save.
+	borrower.PhoneValidator = borrowerDescPhone.Validators[0].(func(string) error)
+	// borrowerDescOrganization is the schema descriptor for organization field.
+	borrowerDescOrganization := borrowerFields[3].Descriptor()
+	// borrower.OrganizationValidator is a validator for the "organization" field. It is called by the builders before save.
+	borrower.OrganizationValidator = borrowerDescOrganization.Validators[0].(func(string) error)
+	// borrowerDescStudentID is the schema descriptor for student_id field.
+	borrowerDescStudentID := borrowerFields[4].Descriptor()
+	// borrower.StudentIDValidator is a validator for the "student_id" field. It is called by the builders before save.
+	borrower.StudentIDValidator = borrowerDescStudentID.Validators[0].(func(string) error)
+	// borrowerDescNotes is the schema descriptor for notes field.
+	borrowerDescNotes := borrowerFields[5].Descriptor()
+	// borrower.NotesValidator is a validator for the "notes" field. It is called by the builders before save.
+	borrower.NotesValidator = borrowerDescNotes.Validators[0].(func(string) error)
+	// borrowerDescIsActive is the schema descriptor for is_active field.
+	borrowerDescIsActive := borrowerFields[6].Descriptor()
+	// borrower.DefaultIsActive holds the default value on creation for the is_active field.
+	borrower.DefaultIsActive = borrowerDescIsActive.Default.(bool)
+	// borrowerDescID is the schema descriptor for id field.
+	borrowerDescID := borrowerMixinFields0[0].Descriptor()
+	// borrower.DefaultID holds the default value on creation for the id field.
+	borrower.DefaultID = borrowerDescID.Default.(func() uuid.UUID)
 	groupMixin := schema.Group{}.Mixin()
 	groupMixinFields0 := groupMixin[0].Fields()
 	_ = groupMixinFields0
@@ -450,6 +527,43 @@ func init() {
 	labelDescID := labelMixinFields0[0].Descriptor()
 	// label.DefaultID holds the default value on creation for the id field.
 	label.DefaultID = labelDescID.Default.(func() uuid.UUID)
+	loanMixin := schema.Loan{}.Mixin()
+	loanMixinFields0 := loanMixin[0].Fields()
+	_ = loanMixinFields0
+	loanFields := schema.Loan{}.Fields()
+	_ = loanFields
+	// loanDescCreatedAt is the schema descriptor for created_at field.
+	loanDescCreatedAt := loanMixinFields0[1].Descriptor()
+	// loan.DefaultCreatedAt holds the default value on creation for the created_at field.
+	loan.DefaultCreatedAt = loanDescCreatedAt.Default.(func() time.Time)
+	// loanDescUpdatedAt is the schema descriptor for updated_at field.
+	loanDescUpdatedAt := loanMixinFields0[2].Descriptor()
+	// loan.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	loan.DefaultUpdatedAt = loanDescUpdatedAt.Default.(func() time.Time)
+	// loan.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	loan.UpdateDefaultUpdatedAt = loanDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// loanDescCheckedOutAt is the schema descriptor for checked_out_at field.
+	loanDescCheckedOutAt := loanFields[0].Descriptor()
+	// loan.DefaultCheckedOutAt holds the default value on creation for the checked_out_at field.
+	loan.DefaultCheckedOutAt = loanDescCheckedOutAt.Default.(func() time.Time)
+	// loanDescNotes is the schema descriptor for notes field.
+	loanDescNotes := loanFields[3].Descriptor()
+	// loan.NotesValidator is a validator for the "notes" field. It is called by the builders before save.
+	loan.NotesValidator = loanDescNotes.Validators[0].(func(string) error)
+	// loanDescReturnNotes is the schema descriptor for return_notes field.
+	loanDescReturnNotes := loanFields[4].Descriptor()
+	// loan.ReturnNotesValidator is a validator for the "return_notes" field. It is called by the builders before save.
+	loan.ReturnNotesValidator = loanDescReturnNotes.Validators[0].(func(string) error)
+	// loanDescQuantity is the schema descriptor for quantity field.
+	loanDescQuantity := loanFields[5].Descriptor()
+	// loan.DefaultQuantity holds the default value on creation for the quantity field.
+	loan.DefaultQuantity = loanDescQuantity.Default.(int)
+	// loan.QuantityValidator is a validator for the "quantity" field. It is called by the builders before save.
+	loan.QuantityValidator = loanDescQuantity.Validators[0].(func(int) error)
+	// loanDescID is the schema descriptor for id field.
+	loanDescID := loanMixinFields0[0].Descriptor()
+	// loan.DefaultID holds the default value on creation for the id field.
+	loan.DefaultID = loanDescID.Default.(func() uuid.UUID)
 	locationMixin := schema.Location{}.Mixin()
 	locationMixinFields0 := locationMixin[0].Fields()
 	_ = locationMixinFields0

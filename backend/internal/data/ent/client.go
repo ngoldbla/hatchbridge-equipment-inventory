@@ -19,12 +19,14 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/attachment"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authroles"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authtokens"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/borrower"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/item"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemtemplate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/label"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/location"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
@@ -43,6 +45,8 @@ type Client struct {
 	AuthRoles *AuthRolesClient
 	// AuthTokens is the client for interacting with the AuthTokens builders.
 	AuthTokens *AuthTokensClient
+	// Borrower is the client for interacting with the Borrower builders.
+	Borrower *BorrowerClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
 	// GroupInvitationToken is the client for interacting with the GroupInvitationToken builders.
@@ -55,6 +59,8 @@ type Client struct {
 	ItemTemplate *ItemTemplateClient
 	// Label is the client for interacting with the Label builders.
 	Label *LabelClient
+	// Loan is the client for interacting with the Loan builders.
+	Loan *LoanClient
 	// Location is the client for interacting with the Location builders.
 	Location *LocationClient
 	// MaintenanceEntry is the client for interacting with the MaintenanceEntry builders.
@@ -79,12 +85,14 @@ func (c *Client) init() {
 	c.Attachment = NewAttachmentClient(c.config)
 	c.AuthRoles = NewAuthRolesClient(c.config)
 	c.AuthTokens = NewAuthTokensClient(c.config)
+	c.Borrower = NewBorrowerClient(c.config)
 	c.Group = NewGroupClient(c.config)
 	c.GroupInvitationToken = NewGroupInvitationTokenClient(c.config)
 	c.Item = NewItemClient(c.config)
 	c.ItemField = NewItemFieldClient(c.config)
 	c.ItemTemplate = NewItemTemplateClient(c.config)
 	c.Label = NewLabelClient(c.config)
+	c.Loan = NewLoanClient(c.config)
 	c.Location = NewLocationClient(c.config)
 	c.MaintenanceEntry = NewMaintenanceEntryClient(c.config)
 	c.Notifier = NewNotifierClient(c.config)
@@ -185,12 +193,14 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Attachment:           NewAttachmentClient(cfg),
 		AuthRoles:            NewAuthRolesClient(cfg),
 		AuthTokens:           NewAuthTokensClient(cfg),
+		Borrower:             NewBorrowerClient(cfg),
 		Group:                NewGroupClient(cfg),
 		GroupInvitationToken: NewGroupInvitationTokenClient(cfg),
 		Item:                 NewItemClient(cfg),
 		ItemField:            NewItemFieldClient(cfg),
 		ItemTemplate:         NewItemTemplateClient(cfg),
 		Label:                NewLabelClient(cfg),
+		Loan:                 NewLoanClient(cfg),
 		Location:             NewLocationClient(cfg),
 		MaintenanceEntry:     NewMaintenanceEntryClient(cfg),
 		Notifier:             NewNotifierClient(cfg),
@@ -218,12 +228,14 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Attachment:           NewAttachmentClient(cfg),
 		AuthRoles:            NewAuthRolesClient(cfg),
 		AuthTokens:           NewAuthTokensClient(cfg),
+		Borrower:             NewBorrowerClient(cfg),
 		Group:                NewGroupClient(cfg),
 		GroupInvitationToken: NewGroupInvitationTokenClient(cfg),
 		Item:                 NewItemClient(cfg),
 		ItemField:            NewItemFieldClient(cfg),
 		ItemTemplate:         NewItemTemplateClient(cfg),
 		Label:                NewLabelClient(cfg),
+		Loan:                 NewLoanClient(cfg),
 		Location:             NewLocationClient(cfg),
 		MaintenanceEntry:     NewMaintenanceEntryClient(cfg),
 		Notifier:             NewNotifierClient(cfg),
@@ -258,9 +270,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Attachment, c.AuthRoles, c.AuthTokens, c.Group, c.GroupInvitationToken,
-		c.Item, c.ItemField, c.ItemTemplate, c.Label, c.Location, c.MaintenanceEntry,
-		c.Notifier, c.TemplateField, c.User,
+		c.Attachment, c.AuthRoles, c.AuthTokens, c.Borrower, c.Group,
+		c.GroupInvitationToken, c.Item, c.ItemField, c.ItemTemplate, c.Label, c.Loan,
+		c.Location, c.MaintenanceEntry, c.Notifier, c.TemplateField, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -270,9 +282,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Attachment, c.AuthRoles, c.AuthTokens, c.Group, c.GroupInvitationToken,
-		c.Item, c.ItemField, c.ItemTemplate, c.Label, c.Location, c.MaintenanceEntry,
-		c.Notifier, c.TemplateField, c.User,
+		c.Attachment, c.AuthRoles, c.AuthTokens, c.Borrower, c.Group,
+		c.GroupInvitationToken, c.Item, c.ItemField, c.ItemTemplate, c.Label, c.Loan,
+		c.Location, c.MaintenanceEntry, c.Notifier, c.TemplateField, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -287,6 +299,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AuthRoles.mutate(ctx, m)
 	case *AuthTokensMutation:
 		return c.AuthTokens.mutate(ctx, m)
+	case *BorrowerMutation:
+		return c.Borrower.mutate(ctx, m)
 	case *GroupMutation:
 		return c.Group.mutate(ctx, m)
 	case *GroupInvitationTokenMutation:
@@ -299,6 +313,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ItemTemplate.mutate(ctx, m)
 	case *LabelMutation:
 		return c.Label.mutate(ctx, m)
+	case *LoanMutation:
+		return c.Loan.mutate(ctx, m)
 	case *LocationMutation:
 		return c.Location.mutate(ctx, m)
 	case *MaintenanceEntryMutation:
@@ -793,6 +809,171 @@ func (c *AuthTokensClient) mutate(ctx context.Context, m *AuthTokensMutation) (V
 	}
 }
 
+// BorrowerClient is a client for the Borrower schema.
+type BorrowerClient struct {
+	config
+}
+
+// NewBorrowerClient returns a client for the Borrower from the given config.
+func NewBorrowerClient(c config) *BorrowerClient {
+	return &BorrowerClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `borrower.Hooks(f(g(h())))`.
+func (c *BorrowerClient) Use(hooks ...Hook) {
+	c.hooks.Borrower = append(c.hooks.Borrower, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `borrower.Intercept(f(g(h())))`.
+func (c *BorrowerClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Borrower = append(c.inters.Borrower, interceptors...)
+}
+
+// Create returns a builder for creating a Borrower entity.
+func (c *BorrowerClient) Create() *BorrowerCreate {
+	mutation := newBorrowerMutation(c.config, OpCreate)
+	return &BorrowerCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Borrower entities.
+func (c *BorrowerClient) CreateBulk(builders ...*BorrowerCreate) *BorrowerCreateBulk {
+	return &BorrowerCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *BorrowerClient) MapCreateBulk(slice any, setFunc func(*BorrowerCreate, int)) *BorrowerCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &BorrowerCreateBulk{err: fmt.Errorf("calling to BorrowerClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*BorrowerCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &BorrowerCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Borrower.
+func (c *BorrowerClient) Update() *BorrowerUpdate {
+	mutation := newBorrowerMutation(c.config, OpUpdate)
+	return &BorrowerUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BorrowerClient) UpdateOne(_m *Borrower) *BorrowerUpdateOne {
+	mutation := newBorrowerMutation(c.config, OpUpdateOne, withBorrower(_m))
+	return &BorrowerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BorrowerClient) UpdateOneID(id uuid.UUID) *BorrowerUpdateOne {
+	mutation := newBorrowerMutation(c.config, OpUpdateOne, withBorrowerID(id))
+	return &BorrowerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Borrower.
+func (c *BorrowerClient) Delete() *BorrowerDelete {
+	mutation := newBorrowerMutation(c.config, OpDelete)
+	return &BorrowerDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *BorrowerClient) DeleteOne(_m *Borrower) *BorrowerDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *BorrowerClient) DeleteOneID(id uuid.UUID) *BorrowerDeleteOne {
+	builder := c.Delete().Where(borrower.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BorrowerDeleteOne{builder}
+}
+
+// Query returns a query builder for Borrower.
+func (c *BorrowerClient) Query() *BorrowerQuery {
+	return &BorrowerQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeBorrower},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Borrower entity by its id.
+func (c *BorrowerClient) Get(ctx context.Context, id uuid.UUID) (*Borrower, error) {
+	return c.Query().Where(borrower.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BorrowerClient) GetX(ctx context.Context, id uuid.UUID) *Borrower {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryGroup queries the group edge of a Borrower.
+func (c *BorrowerClient) QueryGroup(_m *Borrower) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(borrower.Table, borrower.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, borrower.GroupTable, borrower.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLoans queries the loans edge of a Borrower.
+func (c *BorrowerClient) QueryLoans(_m *Borrower) *LoanQuery {
+	query := (&LoanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(borrower.Table, borrower.FieldID, id),
+			sqlgraph.To(loan.Table, loan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, borrower.LoansTable, borrower.LoansColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *BorrowerClient) Hooks() []Hook {
+	return c.hooks.Borrower
+}
+
+// Interceptors returns the client interceptors.
+func (c *BorrowerClient) Interceptors() []Interceptor {
+	return c.inters.Borrower
+}
+
+func (c *BorrowerClient) mutate(ctx context.Context, m *BorrowerMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&BorrowerCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&BorrowerUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&BorrowerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&BorrowerDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Borrower mutation op: %q", m.Op())
+	}
+}
+
 // GroupClient is a client for the Group schema.
 type GroupClient struct {
 	config
@@ -1006,6 +1187,38 @@ func (c *GroupClient) QueryItemTemplates(_m *Group) *ItemTemplateQuery {
 			sqlgraph.From(group.Table, group.FieldID, id),
 			sqlgraph.To(itemtemplate.Table, itemtemplate.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, group.ItemTemplatesTable, group.ItemTemplatesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBorrowers queries the borrowers edge of a Group.
+func (c *GroupClient) QueryBorrowers(_m *Group) *BorrowerQuery {
+	query := (&BorrowerClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(borrower.Table, borrower.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.BorrowersTable, group.BorrowersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLoans queries the loans edge of a Group.
+func (c *GroupClient) QueryLoans(_m *Group) *LoanQuery {
+	query := (&LoanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(loan.Table, loan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.LoansTable, group.LoansColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1416,6 +1629,22 @@ func (c *ItemClient) QueryAttachments(_m *Item) *AttachmentQuery {
 			sqlgraph.From(item.Table, item.FieldID, id),
 			sqlgraph.To(attachment.Table, attachment.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, item.AttachmentsTable, item.AttachmentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLoans queries the loans edge of a Item.
+func (c *ItemClient) QueryLoans(_m *Item) *LoanQuery {
+	query := (&LoanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(item.Table, item.FieldID, id),
+			sqlgraph.To(loan.Table, loan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, item.LoansTable, item.LoansColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1940,6 +2169,219 @@ func (c *LabelClient) mutate(ctx context.Context, m *LabelMutation) (Value, erro
 		return (&LabelDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Label mutation op: %q", m.Op())
+	}
+}
+
+// LoanClient is a client for the Loan schema.
+type LoanClient struct {
+	config
+}
+
+// NewLoanClient returns a client for the Loan from the given config.
+func NewLoanClient(c config) *LoanClient {
+	return &LoanClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `loan.Hooks(f(g(h())))`.
+func (c *LoanClient) Use(hooks ...Hook) {
+	c.hooks.Loan = append(c.hooks.Loan, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `loan.Intercept(f(g(h())))`.
+func (c *LoanClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Loan = append(c.inters.Loan, interceptors...)
+}
+
+// Create returns a builder for creating a Loan entity.
+func (c *LoanClient) Create() *LoanCreate {
+	mutation := newLoanMutation(c.config, OpCreate)
+	return &LoanCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Loan entities.
+func (c *LoanClient) CreateBulk(builders ...*LoanCreate) *LoanCreateBulk {
+	return &LoanCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LoanClient) MapCreateBulk(slice any, setFunc func(*LoanCreate, int)) *LoanCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LoanCreateBulk{err: fmt.Errorf("calling to LoanClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LoanCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LoanCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Loan.
+func (c *LoanClient) Update() *LoanUpdate {
+	mutation := newLoanMutation(c.config, OpUpdate)
+	return &LoanUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LoanClient) UpdateOne(_m *Loan) *LoanUpdateOne {
+	mutation := newLoanMutation(c.config, OpUpdateOne, withLoan(_m))
+	return &LoanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LoanClient) UpdateOneID(id uuid.UUID) *LoanUpdateOne {
+	mutation := newLoanMutation(c.config, OpUpdateOne, withLoanID(id))
+	return &LoanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Loan.
+func (c *LoanClient) Delete() *LoanDelete {
+	mutation := newLoanMutation(c.config, OpDelete)
+	return &LoanDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LoanClient) DeleteOne(_m *Loan) *LoanDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LoanClient) DeleteOneID(id uuid.UUID) *LoanDeleteOne {
+	builder := c.Delete().Where(loan.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LoanDeleteOne{builder}
+}
+
+// Query returns a query builder for Loan.
+func (c *LoanClient) Query() *LoanQuery {
+	return &LoanQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLoan},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Loan entity by its id.
+func (c *LoanClient) Get(ctx context.Context, id uuid.UUID) (*Loan, error) {
+	return c.Query().Where(loan.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LoanClient) GetX(ctx context.Context, id uuid.UUID) *Loan {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryGroup queries the group edge of a Loan.
+func (c *LoanClient) QueryGroup(_m *Loan) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(loan.Table, loan.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, loan.GroupTable, loan.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryItem queries the item edge of a Loan.
+func (c *LoanClient) QueryItem(_m *Loan) *ItemQuery {
+	query := (&ItemClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(loan.Table, loan.FieldID, id),
+			sqlgraph.To(item.Table, item.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, loan.ItemTable, loan.ItemColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBorrower queries the borrower edge of a Loan.
+func (c *LoanClient) QueryBorrower(_m *Loan) *BorrowerQuery {
+	query := (&BorrowerClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(loan.Table, loan.FieldID, id),
+			sqlgraph.To(borrower.Table, borrower.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, loan.BorrowerTable, loan.BorrowerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCheckedOutBy queries the checked_out_by edge of a Loan.
+func (c *LoanClient) QueryCheckedOutBy(_m *Loan) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(loan.Table, loan.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, loan.CheckedOutByTable, loan.CheckedOutByColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReturnedBy queries the returned_by edge of a Loan.
+func (c *LoanClient) QueryReturnedBy(_m *Loan) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(loan.Table, loan.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, loan.ReturnedByTable, loan.ReturnedByColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LoanClient) Hooks() []Hook {
+	return c.hooks.Loan
+}
+
+// Interceptors returns the client interceptors.
+func (c *LoanClient) Interceptors() []Interceptor {
+	return c.inters.Loan
+}
+
+func (c *LoanClient) mutate(ctx context.Context, m *LoanMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LoanCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LoanUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LoanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LoanDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Loan mutation op: %q", m.Op())
 	}
 }
 
@@ -2759,6 +3201,38 @@ func (c *UserClient) QueryNotifiers(_m *User) *NotifierQuery {
 	return query
 }
 
+// QueryCheckouts queries the checkouts edge of a User.
+func (c *UserClient) QueryCheckouts(_m *User) *LoanQuery {
+	query := (&LoanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(loan.Table, loan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.CheckoutsTable, user.CheckoutsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReturns queries the returns edge of a User.
+func (c *UserClient) QueryReturns(_m *User) *LoanQuery {
+	query := (&LoanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(loan.Table, loan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ReturnsTable, user.ReturnsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -2787,13 +3261,13 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Attachment, AuthRoles, AuthTokens, Group, GroupInvitationToken, Item, ItemField,
-		ItemTemplate, Label, Location, MaintenanceEntry, Notifier, TemplateField,
-		User []ent.Hook
+		Attachment, AuthRoles, AuthTokens, Borrower, Group, GroupInvitationToken, Item,
+		ItemField, ItemTemplate, Label, Loan, Location, MaintenanceEntry, Notifier,
+		TemplateField, User []ent.Hook
 	}
 	inters struct {
-		Attachment, AuthRoles, AuthTokens, Group, GroupInvitationToken, Item, ItemField,
-		ItemTemplate, Label, Location, MaintenanceEntry, Notifier, TemplateField,
-		User []ent.Interceptor
+		Attachment, AuthRoles, AuthTokens, Borrower, Group, GroupInvitationToken, Item,
+		ItemField, ItemTemplate, Label, Loan, Location, MaintenanceEntry, Notifier,
+		TemplateField, User []ent.Interceptor
 	}
 )

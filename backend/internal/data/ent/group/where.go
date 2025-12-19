@@ -447,6 +447,52 @@ func HasItemTemplatesWith(preds ...predicate.ItemTemplate) predicate.Group {
 	})
 }
 
+// HasBorrowers applies the HasEdge predicate on the "borrowers" edge.
+func HasBorrowers() predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, BorrowersTable, BorrowersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBorrowersWith applies the HasEdge predicate on the "borrowers" edge with a given conditions (other predicates).
+func HasBorrowersWith(preds ...predicate.Borrower) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := newBorrowersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasLoans applies the HasEdge predicate on the "loans" edge.
+func HasLoans() predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LoansTable, LoansColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLoansWith applies the HasEdge predicate on the "loans" edge with a given conditions (other predicates).
+func HasLoansWith(preds ...predicate.Loan) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := newLoansStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Group) predicate.Group {
 	return predicate.Group(sql.AndPredicates(predicates...))

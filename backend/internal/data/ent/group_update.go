@@ -12,11 +12,13 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/borrower"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/item"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemtemplate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/label"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/location"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
@@ -175,6 +177,36 @@ func (_u *GroupUpdate) AddItemTemplates(v ...*ItemTemplate) *GroupUpdate {
 	return _u.AddItemTemplateIDs(ids...)
 }
 
+// AddBorrowerIDs adds the "borrowers" edge to the Borrower entity by IDs.
+func (_u *GroupUpdate) AddBorrowerIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.AddBorrowerIDs(ids...)
+	return _u
+}
+
+// AddBorrowers adds the "borrowers" edges to the Borrower entity.
+func (_u *GroupUpdate) AddBorrowers(v ...*Borrower) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddBorrowerIDs(ids...)
+}
+
+// AddLoanIDs adds the "loans" edge to the Loan entity by IDs.
+func (_u *GroupUpdate) AddLoanIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.AddLoanIDs(ids...)
+	return _u
+}
+
+// AddLoans adds the "loans" edges to the Loan entity.
+func (_u *GroupUpdate) AddLoans(v ...*Loan) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLoanIDs(ids...)
+}
+
 // Mutation returns the GroupMutation object of the builder.
 func (_u *GroupUpdate) Mutation() *GroupMutation {
 	return _u.mutation
@@ -325,6 +357,48 @@ func (_u *GroupUpdate) RemoveItemTemplates(v ...*ItemTemplate) *GroupUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveItemTemplateIDs(ids...)
+}
+
+// ClearBorrowers clears all "borrowers" edges to the Borrower entity.
+func (_u *GroupUpdate) ClearBorrowers() *GroupUpdate {
+	_u.mutation.ClearBorrowers()
+	return _u
+}
+
+// RemoveBorrowerIDs removes the "borrowers" edge to Borrower entities by IDs.
+func (_u *GroupUpdate) RemoveBorrowerIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.RemoveBorrowerIDs(ids...)
+	return _u
+}
+
+// RemoveBorrowers removes "borrowers" edges to Borrower entities.
+func (_u *GroupUpdate) RemoveBorrowers(v ...*Borrower) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveBorrowerIDs(ids...)
+}
+
+// ClearLoans clears all "loans" edges to the Loan entity.
+func (_u *GroupUpdate) ClearLoans() *GroupUpdate {
+	_u.mutation.ClearLoans()
+	return _u
+}
+
+// RemoveLoanIDs removes the "loans" edge to Loan entities by IDs.
+func (_u *GroupUpdate) RemoveLoanIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.RemoveLoanIDs(ids...)
+	return _u
+}
+
+// RemoveLoans removes "loans" edges to Loan entities.
+func (_u *GroupUpdate) RemoveLoans(v ...*Loan) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLoanIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -709,6 +783,96 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.BorrowersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.BorrowersTable,
+			Columns: []string{group.BorrowersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(borrower.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedBorrowersIDs(); len(nodes) > 0 && !_u.mutation.BorrowersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.BorrowersTable,
+			Columns: []string{group.BorrowersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(borrower.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.BorrowersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.BorrowersTable,
+			Columns: []string{group.BorrowersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(borrower.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LoansCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.LoansTable,
+			Columns: []string{group.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLoansIDs(); len(nodes) > 0 && !_u.mutation.LoansCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.LoansTable,
+			Columns: []string{group.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LoansIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.LoansTable,
+			Columns: []string{group.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{group.Label}
@@ -868,6 +1032,36 @@ func (_u *GroupUpdateOne) AddItemTemplates(v ...*ItemTemplate) *GroupUpdateOne {
 	return _u.AddItemTemplateIDs(ids...)
 }
 
+// AddBorrowerIDs adds the "borrowers" edge to the Borrower entity by IDs.
+func (_u *GroupUpdateOne) AddBorrowerIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.AddBorrowerIDs(ids...)
+	return _u
+}
+
+// AddBorrowers adds the "borrowers" edges to the Borrower entity.
+func (_u *GroupUpdateOne) AddBorrowers(v ...*Borrower) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddBorrowerIDs(ids...)
+}
+
+// AddLoanIDs adds the "loans" edge to the Loan entity by IDs.
+func (_u *GroupUpdateOne) AddLoanIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.AddLoanIDs(ids...)
+	return _u
+}
+
+// AddLoans adds the "loans" edges to the Loan entity.
+func (_u *GroupUpdateOne) AddLoans(v ...*Loan) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLoanIDs(ids...)
+}
+
 // Mutation returns the GroupMutation object of the builder.
 func (_u *GroupUpdateOne) Mutation() *GroupMutation {
 	return _u.mutation
@@ -1018,6 +1212,48 @@ func (_u *GroupUpdateOne) RemoveItemTemplates(v ...*ItemTemplate) *GroupUpdateOn
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveItemTemplateIDs(ids...)
+}
+
+// ClearBorrowers clears all "borrowers" edges to the Borrower entity.
+func (_u *GroupUpdateOne) ClearBorrowers() *GroupUpdateOne {
+	_u.mutation.ClearBorrowers()
+	return _u
+}
+
+// RemoveBorrowerIDs removes the "borrowers" edge to Borrower entities by IDs.
+func (_u *GroupUpdateOne) RemoveBorrowerIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.RemoveBorrowerIDs(ids...)
+	return _u
+}
+
+// RemoveBorrowers removes "borrowers" edges to Borrower entities.
+func (_u *GroupUpdateOne) RemoveBorrowers(v ...*Borrower) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveBorrowerIDs(ids...)
+}
+
+// ClearLoans clears all "loans" edges to the Loan entity.
+func (_u *GroupUpdateOne) ClearLoans() *GroupUpdateOne {
+	_u.mutation.ClearLoans()
+	return _u
+}
+
+// RemoveLoanIDs removes the "loans" edge to Loan entities by IDs.
+func (_u *GroupUpdateOne) RemoveLoanIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.RemoveLoanIDs(ids...)
+	return _u
+}
+
+// RemoveLoans removes "loans" edges to Loan entities.
+func (_u *GroupUpdateOne) RemoveLoans(v ...*Loan) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLoanIDs(ids...)
 }
 
 // Where appends a list predicates to the GroupUpdate builder.
@@ -1425,6 +1661,96 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(itemtemplate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.BorrowersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.BorrowersTable,
+			Columns: []string{group.BorrowersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(borrower.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedBorrowersIDs(); len(nodes) > 0 && !_u.mutation.BorrowersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.BorrowersTable,
+			Columns: []string{group.BorrowersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(borrower.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.BorrowersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.BorrowersTable,
+			Columns: []string{group.BorrowersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(borrower.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LoansCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.LoansTable,
+			Columns: []string{group.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLoansIDs(); len(nodes) > 0 && !_u.mutation.LoansCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.LoansTable,
+			Columns: []string{group.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LoansIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.LoansTable,
+			Columns: []string{group.LoansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
