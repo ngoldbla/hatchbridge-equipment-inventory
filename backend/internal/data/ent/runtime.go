@@ -14,6 +14,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/item"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemtemplate"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/kiosksession"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/label"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/location"
@@ -159,6 +160,10 @@ func init() {
 	borrowerDescIsActive := borrowerFields[6].Descriptor()
 	// borrower.DefaultIsActive holds the default value on creation for the is_active field.
 	borrower.DefaultIsActive = borrowerDescIsActive.Default.(bool)
+	// borrowerDescSelfRegistered is the schema descriptor for self_registered field.
+	borrowerDescSelfRegistered := borrowerFields[7].Descriptor()
+	// borrower.DefaultSelfRegistered holds the default value on creation for the self_registered field.
+	borrower.DefaultSelfRegistered = borrowerDescSelfRegistered.Default.(bool)
 	// borrowerDescID is the schema descriptor for id field.
 	borrowerDescID := borrowerMixinFields0[0].Descriptor()
 	// borrower.DefaultID holds the default value on creation for the id field.
@@ -480,6 +485,29 @@ func init() {
 	itemtemplateDescID := itemtemplateMixinFields0[0].Descriptor()
 	// itemtemplate.DefaultID holds the default value on creation for the id field.
 	itemtemplate.DefaultID = itemtemplateDescID.Default.(func() uuid.UUID)
+	kiosksessionMixin := schema.KioskSession{}.Mixin()
+	kiosksessionMixinFields0 := kiosksessionMixin[0].Fields()
+	_ = kiosksessionMixinFields0
+	kiosksessionFields := schema.KioskSession{}.Fields()
+	_ = kiosksessionFields
+	// kiosksessionDescCreatedAt is the schema descriptor for created_at field.
+	kiosksessionDescCreatedAt := kiosksessionMixinFields0[1].Descriptor()
+	// kiosksession.DefaultCreatedAt holds the default value on creation for the created_at field.
+	kiosksession.DefaultCreatedAt = kiosksessionDescCreatedAt.Default.(func() time.Time)
+	// kiosksessionDescUpdatedAt is the schema descriptor for updated_at field.
+	kiosksessionDescUpdatedAt := kiosksessionMixinFields0[2].Descriptor()
+	// kiosksession.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	kiosksession.DefaultUpdatedAt = kiosksessionDescUpdatedAt.Default.(func() time.Time)
+	// kiosksession.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	kiosksession.UpdateDefaultUpdatedAt = kiosksessionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// kiosksessionDescIsActive is the schema descriptor for is_active field.
+	kiosksessionDescIsActive := kiosksessionFields[0].Descriptor()
+	// kiosksession.DefaultIsActive holds the default value on creation for the is_active field.
+	kiosksession.DefaultIsActive = kiosksessionDescIsActive.Default.(bool)
+	// kiosksessionDescID is the schema descriptor for id field.
+	kiosksessionDescID := kiosksessionMixinFields0[0].Descriptor()
+	// kiosksession.DefaultID holds the default value on creation for the id field.
+	kiosksession.DefaultID = kiosksessionDescID.Default.(func() uuid.UUID)
 	labelMixin := schema.Label{}.Mixin()
 	labelMixinFields0 := labelMixin[0].Fields()
 	_ = labelMixinFields0
@@ -560,6 +588,10 @@ func init() {
 	loan.DefaultQuantity = loanDescQuantity.Default.(int)
 	// loan.QuantityValidator is a validator for the "quantity" field. It is called by the builders before save.
 	loan.QuantityValidator = loanDescQuantity.Validators[0].(func(int) error)
+	// loanDescKioskAction is the schema descriptor for kiosk_action field.
+	loanDescKioskAction := loanFields[6].Descriptor()
+	// loan.DefaultKioskAction holds the default value on creation for the kiosk_action field.
+	loan.DefaultKioskAction = loanDescKioskAction.Default.(bool)
 	// loanDescID is the schema descriptor for id field.
 	loanDescID := loanMixinFields0[0].Descriptor()
 	// loan.DefaultID holds the default value on creation for the id field.

@@ -129,6 +129,20 @@ func (_c *LoanCreate) SetNillableQuantity(v *int) *LoanCreate {
 	return _c
 }
 
+// SetKioskAction sets the "kiosk_action" field.
+func (_c *LoanCreate) SetKioskAction(v bool) *LoanCreate {
+	_c.mutation.SetKioskAction(v)
+	return _c
+}
+
+// SetNillableKioskAction sets the "kiosk_action" field if the given value is not nil.
+func (_c *LoanCreate) SetNillableKioskAction(v *bool) *LoanCreate {
+	if v != nil {
+		_c.SetKioskAction(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *LoanCreate) SetID(v uuid.UUID) *LoanCreate {
 	_c.mutation.SetID(v)
@@ -265,6 +279,10 @@ func (_c *LoanCreate) defaults() {
 		v := loan.DefaultQuantity
 		_c.mutation.SetQuantity(v)
 	}
+	if _, ok := _c.mutation.KioskAction(); !ok {
+		v := loan.DefaultKioskAction
+		_c.mutation.SetKioskAction(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := loan.DefaultID()
 		_c.mutation.SetID(v)
@@ -302,6 +320,9 @@ func (_c *LoanCreate) check() error {
 		if err := loan.QuantityValidator(v); err != nil {
 			return &ValidationError{Name: "quantity", err: fmt.Errorf(`ent: validator failed for field "Loan.quantity": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.KioskAction(); !ok {
+		return &ValidationError{Name: "kiosk_action", err: errors.New(`ent: missing required field "Loan.kiosk_action"`)}
 	}
 	if len(_c.mutation.GroupIDs()) == 0 {
 		return &ValidationError{Name: "group", err: errors.New(`ent: missing required edge "Loan.group"`)}
@@ -378,6 +399,10 @@ func (_c *LoanCreate) createSpec() (*Loan, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Quantity(); ok {
 		_spec.SetField(loan.FieldQuantity, field.TypeInt, value)
 		_node.Quantity = value
+	}
+	if value, ok := _c.mutation.KioskAction(); ok {
+		_spec.SetField(loan.FieldKioskAction, field.TypeBool, value)
+		_node.KioskAction = value
 	}
 	if nodes := _c.mutation.GroupIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

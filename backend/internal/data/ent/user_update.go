@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authtokens"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/kiosksession"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
@@ -260,6 +261,25 @@ func (_u *UserUpdate) AddReturns(v ...*Loan) *UserUpdate {
 	return _u.AddReturnIDs(ids...)
 }
 
+// SetKioskSessionID sets the "kiosk_session" edge to the KioskSession entity by ID.
+func (_u *UserUpdate) SetKioskSessionID(id uuid.UUID) *UserUpdate {
+	_u.mutation.SetKioskSessionID(id)
+	return _u
+}
+
+// SetNillableKioskSessionID sets the "kiosk_session" edge to the KioskSession entity by ID if the given value is not nil.
+func (_u *UserUpdate) SetNillableKioskSessionID(id *uuid.UUID) *UserUpdate {
+	if id != nil {
+		_u = _u.SetKioskSessionID(*id)
+	}
+	return _u
+}
+
+// SetKioskSession sets the "kiosk_session" edge to the KioskSession entity.
+func (_u *UserUpdate) SetKioskSession(v *KioskSession) *UserUpdate {
+	return _u.SetKioskSessionID(v.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
@@ -353,6 +373,12 @@ func (_u *UserUpdate) RemoveReturns(v ...*Loan) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveReturnIDs(ids...)
+}
+
+// ClearKioskSession clears the "kiosk_session" edge to the KioskSession entity.
+func (_u *UserUpdate) ClearKioskSession() *UserUpdate {
+	_u.mutation.ClearKioskSession()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -682,6 +708,35 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.KioskSessionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.KioskSessionTable,
+			Columns: []string{user.KioskSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kiosksession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KioskSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.KioskSessionTable,
+			Columns: []string{user.KioskSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kiosksession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -929,6 +984,25 @@ func (_u *UserUpdateOne) AddReturns(v ...*Loan) *UserUpdateOne {
 	return _u.AddReturnIDs(ids...)
 }
 
+// SetKioskSessionID sets the "kiosk_session" edge to the KioskSession entity by ID.
+func (_u *UserUpdateOne) SetKioskSessionID(id uuid.UUID) *UserUpdateOne {
+	_u.mutation.SetKioskSessionID(id)
+	return _u
+}
+
+// SetNillableKioskSessionID sets the "kiosk_session" edge to the KioskSession entity by ID if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableKioskSessionID(id *uuid.UUID) *UserUpdateOne {
+	if id != nil {
+		_u = _u.SetKioskSessionID(*id)
+	}
+	return _u
+}
+
+// SetKioskSession sets the "kiosk_session" edge to the KioskSession entity.
+func (_u *UserUpdateOne) SetKioskSession(v *KioskSession) *UserUpdateOne {
+	return _u.SetKioskSessionID(v.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
@@ -1022,6 +1096,12 @@ func (_u *UserUpdateOne) RemoveReturns(v ...*Loan) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveReturnIDs(ids...)
+}
+
+// ClearKioskSession clears the "kiosk_session" edge to the KioskSession entity.
+func (_u *UserUpdateOne) ClearKioskSession() *UserUpdateOne {
+	_u.mutation.ClearKioskSession()
+	return _u
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1374,6 +1454,35 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.KioskSessionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.KioskSessionTable,
+			Columns: []string{user.KioskSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kiosksession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KioskSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.KioskSessionTable,
+			Columns: []string{user.KioskSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kiosksession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

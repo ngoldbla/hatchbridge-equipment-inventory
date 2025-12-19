@@ -101,6 +101,11 @@ func IsActive(v bool) predicate.Borrower {
 	return predicate.Borrower(sql.FieldEQ(FieldIsActive, v))
 }
 
+// SelfRegistered applies equality check predicate on the "self_registered" field. It's identical to SelfRegisteredEQ.
+func SelfRegistered(v bool) predicate.Borrower {
+	return predicate.Borrower(sql.FieldEQ(FieldSelfRegistered, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Borrower {
 	return predicate.Borrower(sql.FieldEQ(FieldCreatedAt, v))
@@ -619,6 +624,16 @@ func IsActiveEQ(v bool) predicate.Borrower {
 // IsActiveNEQ applies the NEQ predicate on the "is_active" field.
 func IsActiveNEQ(v bool) predicate.Borrower {
 	return predicate.Borrower(sql.FieldNEQ(FieldIsActive, v))
+}
+
+// SelfRegisteredEQ applies the EQ predicate on the "self_registered" field.
+func SelfRegisteredEQ(v bool) predicate.Borrower {
+	return predicate.Borrower(sql.FieldEQ(FieldSelfRegistered, v))
+}
+
+// SelfRegisteredNEQ applies the NEQ predicate on the "self_registered" field.
+func SelfRegisteredNEQ(v bool) predicate.Borrower {
+	return predicate.Borrower(sql.FieldNEQ(FieldSelfRegistered, v))
 }
 
 // HasGroup applies the HasEdge predicate on the "group" edge.

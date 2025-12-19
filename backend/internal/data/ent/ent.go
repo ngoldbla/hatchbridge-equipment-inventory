@@ -21,6 +21,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/item"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemtemplate"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/kiosksession"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/label"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/location"
@@ -97,6 +98,7 @@ func checkColumn(t, c string) error {
 			item.Table:                 item.ValidColumn,
 			itemfield.Table:            itemfield.ValidColumn,
 			itemtemplate.Table:         itemtemplate.ValidColumn,
+			kiosksession.Table:         kiosksession.ValidColumn,
 			label.Table:                label.ValidColumn,
 			loan.Table:                 loan.ValidColumn,
 			location.Table:             location.ValidColumn,

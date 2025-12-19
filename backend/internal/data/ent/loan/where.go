@@ -96,6 +96,11 @@ func Quantity(v int) predicate.Loan {
 	return predicate.Loan(sql.FieldEQ(FieldQuantity, v))
 }
 
+// KioskAction applies equality check predicate on the "kiosk_action" field. It's identical to KioskActionEQ.
+func KioskAction(v bool) predicate.Loan {
+	return predicate.Loan(sql.FieldEQ(FieldKioskAction, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Loan {
 	return predicate.Loan(sql.FieldEQ(FieldCreatedAt, v))
@@ -494,6 +499,16 @@ func QuantityLT(v int) predicate.Loan {
 // QuantityLTE applies the LTE predicate on the "quantity" field.
 func QuantityLTE(v int) predicate.Loan {
 	return predicate.Loan(sql.FieldLTE(FieldQuantity, v))
+}
+
+// KioskActionEQ applies the EQ predicate on the "kiosk_action" field.
+func KioskActionEQ(v bool) predicate.Loan {
+	return predicate.Loan(sql.FieldEQ(FieldKioskAction, v))
+}
+
+// KioskActionNEQ applies the NEQ predicate on the "kiosk_action" field.
+func KioskActionNEQ(v bool) predicate.Loan {
+	return predicate.Loan(sql.FieldNEQ(FieldKioskAction, v))
 }
 
 // HasGroup applies the HasEdge predicate on the "group" edge.

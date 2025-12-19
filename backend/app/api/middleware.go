@@ -152,3 +152,48 @@ func (a *app) mwAuthToken(next errchain.Handler) errchain.Handler {
 		return next.ServeHTTP(w, r)
 	})
 }
+
+// mwKioskContext is a middleware that checks if the user is in kiosk mode
+// and sets the kiosk state in the context. This should be called after mwAuthToken.
+func (a *app) mwKioskContext(next errchain.Handler) errchain.Handler {
+	return errchain.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
+		user := services.UseUserCtx(r.Context())
+		if user == nil {
+			return next.ServeHTTP(w, r)
+		}
+
+		// Check if user has an active kiosk session
+		session, err := a.repos.KioskSessions.GetByUserID(r.Context(), user.ID)
+		if err != nil {
+			// Don't fail the request, just proceed without kiosk mode
+			return next.ServeHTTP(w, r)
+		}
+
+		if session != nil && session.IsActive {
+			// User is in kiosk mode
+			isUnlocked := session.IsUnlocked()
+			r = r.WithContext(services.SetKioskCtx(r.Context(), true, isUnlocked))
+		}
+
+		return next.ServeHTTP(w, r)
+	})
+}
+
+// mwKioskRestrict is a middleware that blocks destructive operations when in kiosk mode
+// unless the kiosk is temporarily unlocked. This should be called after mwKioskContext.
+func (a *app) mwKioskRestrict(next errchain.Handler) errchain.Handler {
+	return errchain.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
+		isKiosk := services.UseKioskModeCtx(r.Context())
+		isUnlocked := services.UseKioskUnlockedCtx(r.Context())
+
+		// If in kiosk mode and not unlocked, block the request
+		if isKiosk && !isUnlocked {
+			return validate.NewRequestError(
+				errors.New("this action requires admin access - please unlock to continue"),
+				http.StatusForbidden,
+			)
+		}
+
+		return next.ServeHTTP(w, r)
+	})
+}

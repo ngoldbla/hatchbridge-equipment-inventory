@@ -91,6 +91,16 @@
 
         <SidebarFooter>
           <SidebarMenuButton
+            class="flex justify-center group-data-[collapsible=icon]:justify-start"
+            :tooltip="'Enter Kiosk Mode'"
+            @click="enterKioskMode"
+          >
+            <MdiKiosk />
+            <span>
+              Kiosk Mode
+            </span>
+          </SidebarMenuButton>
+          <SidebarMenuButton
             class="flex justify-center group-data-[collapsible=icon]:justify-start group-data-[collapsible=icon]:bg-destructive group-data-[collapsible=icon]:text-destructive-foreground group-data-[collapsible=icon]:shadow-sm group-data-[collapsible=icon]:hover:bg-destructive/90"
             :tooltip="$t('global.sign_out')"
             data-testid="logout-button"
@@ -197,6 +207,7 @@
   import MdiPlus from "~icons/mdi/plus";
   import MdiLogout from "~icons/mdi/logout";
   import MdiFileDocumentMultiple from "~icons/mdi/file-document-multiple";
+  import MdiKiosk from "~icons/mdi/monitor-screenshot";
 
   import {
     Sidebar,
@@ -432,9 +443,15 @@
 
   const authCtx = useAuthContext();
   const api = useUserApi();
+  const { activate: activateKiosk } = useKiosk();
 
   async function logout() {
     await authCtx.logout(api);
     navigateTo("/");
   }
+
+  async function enterKioskMode() {
+    await activateKiosk();
+  }
 </script>
+

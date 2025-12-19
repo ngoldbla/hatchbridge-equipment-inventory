@@ -14,6 +14,7 @@ import { ProductAPI } from "./classes/product";
 import { TemplatesApi } from "./classes/templates";
 import { BorrowersApi } from "./classes/borrowers";
 import { LoansApi } from "./classes/loans";
+import { KioskAPI } from "./classes/kiosk";
 import type { Requests } from "~~/lib/requests";
 
 export class UserClient extends BaseAPI {
@@ -32,6 +33,7 @@ export class UserClient extends BaseAPI {
   products: ProductAPI;
   borrowers: BorrowersApi;
   loans: LoansApi;
+  kiosk: KioskAPI;
 
   constructor(requests: Requests, attachmentToken: string) {
     super(requests, attachmentToken);
@@ -51,7 +53,9 @@ export class UserClient extends BaseAPI {
     this.products = new ProductAPI(requests);
     this.borrowers = new BorrowersApi(requests);
     this.loans = new LoansApi(requests);
+    this.kiosk = new KioskAPI(requests);
 
     Object.freeze(this);
   }
 }
+

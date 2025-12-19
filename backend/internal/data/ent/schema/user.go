@@ -78,6 +78,12 @@ func (User) Edges() []ent.Edge {
 		edge.To("checkouts", Loan.Type),
 		// Loans this user processed returns for (as an admin)
 		edge.To("returns", Loan.Type),
+		// Kiosk session for this user (optional, only when kiosk mode is active)
+		edge.To("kiosk_session", KioskSession.Type).
+			Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 	}
 }
 

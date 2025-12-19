@@ -21,6 +21,7 @@ type AllRepos struct {
 	Notifiers     *NotifierRepository
 	Borrowers     *BorrowerRepository
 	Loans         *LoanRepository
+	KioskSessions *KioskSessionRepository
 }
 
 func New(db *ent.Client, bus *eventbus.EventBus, storage config.Storage, pubSubConn string, thumbnail config.Thumbnail) *AllRepos {
@@ -38,5 +39,6 @@ func New(db *ent.Client, bus *eventbus.EventBus, storage config.Storage, pubSubC
 		Notifiers:     NewNotifierRepository(db),
 		Borrowers:     &BorrowerRepository{db, bus},
 		Loans:         &LoanRepository{db, bus},
+		KioskSessions: &KioskSessionRepository{db},
 	}
 }

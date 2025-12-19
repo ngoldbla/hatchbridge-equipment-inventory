@@ -117,6 +117,18 @@ func (f ItemTemplateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ItemTemplateMutation", m)
 }
 
+// The KioskSessionFunc type is an adapter to allow the use of ordinary
+// function as KioskSession mutator.
+type KioskSessionFunc func(context.Context, *ent.KioskSessionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KioskSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KioskSessionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KioskSessionMutation", m)
+}
+
 // The LabelFunc type is an adapter to allow the use of ordinary
 // function as Label mutator.
 type LabelFunc func(context.Context, *ent.LabelMutation) (ent.Value, error)

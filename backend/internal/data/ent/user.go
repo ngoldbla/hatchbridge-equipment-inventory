@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/kiosksession"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 )
 
@@ -60,9 +61,11 @@ type UserEdges struct {
 	Checkouts []*Loan `json:"checkouts,omitempty"`
 	// Returns holds the value of the returns edge.
 	Returns []*Loan `json:"returns,omitempty"`
+	// KioskSession holds the value of the kiosk_session edge.
+	KioskSession *KioskSession `json:"kiosk_session,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // GroupOrErr returns the Group value or an error if the edge
@@ -110,6 +113,17 @@ func (e UserEdges) ReturnsOrErr() ([]*Loan, error) {
 		return e.Returns, nil
 	}
 	return nil, &NotLoadedError{edge: "returns"}
+}
+
+// KioskSessionOrErr returns the KioskSession value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) KioskSessionOrErr() (*KioskSession, error) {
+	if e.KioskSession != nil {
+		return e.KioskSession, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: kiosksession.Label}
+	}
+	return nil, &NotLoadedError{edge: "kiosk_session"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -260,6 +274,11 @@ func (_m *User) QueryCheckouts() *LoanQuery {
 // QueryReturns queries the "returns" edge of the User entity.
 func (_m *User) QueryReturns() *LoanQuery {
 	return NewUserClient(_m.config).QueryReturns(_m)
+}
+
+// QueryKioskSession queries the "kiosk_session" edge of the User entity.
+func (_m *User) QueryKioskSession() *KioskSessionQuery {
+	return NewUserClient(_m.config).QueryKioskSession(_m)
 }
 
 // Update returns a builder for updating this User.

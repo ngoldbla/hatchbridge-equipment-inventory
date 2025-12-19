@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authtokens"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/kiosksession"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
@@ -246,6 +247,25 @@ func (_c *UserCreate) AddReturns(v ...*Loan) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddReturnIDs(ids...)
+}
+
+// SetKioskSessionID sets the "kiosk_session" edge to the KioskSession entity by ID.
+func (_c *UserCreate) SetKioskSessionID(id uuid.UUID) *UserCreate {
+	_c.mutation.SetKioskSessionID(id)
+	return _c
+}
+
+// SetNillableKioskSessionID sets the "kiosk_session" edge to the KioskSession entity by ID if the given value is not nil.
+func (_c *UserCreate) SetNillableKioskSessionID(id *uuid.UUID) *UserCreate {
+	if id != nil {
+		_c = _c.SetKioskSessionID(*id)
+	}
+	return _c
+}
+
+// SetKioskSession sets the "kiosk_session" edge to the KioskSession entity.
+func (_c *UserCreate) SetKioskSession(v *KioskSession) *UserCreate {
+	return _c.SetKioskSessionID(v.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -508,6 +528,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(loan.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.KioskSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.KioskSessionTable,
+			Columns: []string{user.KioskSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kiosksession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

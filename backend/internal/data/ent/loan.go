@@ -38,6 +38,8 @@ type Loan struct {
 	ReturnNotes string `json:"return_notes,omitempty"`
 	// Number of items borrowed (for items with quantity > 1)
 	Quantity int `json:"quantity,omitempty"`
+	// Whether this loan was created/returned via kiosk self-service
+	KioskAction bool `json:"kiosk_action,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LoanQuery when eager-loading is set.
 	Edges          LoanEdges `json:"edges"`
@@ -126,6 +128,8 @@ func (*Loan) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case loan.FieldKioskAction:
+			values[i] = new(sql.NullBool)
 		case loan.FieldQuantity:
 			values[i] = new(sql.NullInt64)
 		case loan.FieldNotes, loan.FieldReturnNotes:
@@ -213,6 +217,12 @@ func (_m *Loan) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field quantity", values[i])
 			} else if value.Valid {
 				_m.Quantity = int(value.Int64)
+			}
+		case loan.FieldKioskAction:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field kiosk_action", values[i])
+			} else if value.Valid {
+				_m.KioskAction = value.Bool
 			}
 		case loan.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -335,6 +345,9 @@ func (_m *Loan) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("quantity=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Quantity))
+	builder.WriteString(", ")
+	builder.WriteString("kiosk_action=")
+	builder.WriteString(fmt.Sprintf("%v", _m.KioskAction))
 	builder.WriteByte(')')
 	return builder.String()
 }

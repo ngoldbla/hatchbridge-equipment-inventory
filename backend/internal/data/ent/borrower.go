@@ -37,6 +37,8 @@ type Borrower struct {
 	Notes string `json:"notes,omitempty"`
 	// Whether borrower can currently check out equipment
 	IsActive bool `json:"is_active,omitempty"`
+	// Whether borrower registered themselves via kiosk self-service
+	SelfRegistered bool `json:"self_registered,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BorrowerQuery when eager-loading is set.
 	Edges           BorrowerEdges `json:"edges"`
@@ -80,7 +82,7 @@ func (*Borrower) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case borrower.FieldIsActive:
+		case borrower.FieldIsActive, borrower.FieldSelfRegistered:
 			values[i] = new(sql.NullBool)
 		case borrower.FieldName, borrower.FieldEmail, borrower.FieldPhone, borrower.FieldOrganization, borrower.FieldStudentID, borrower.FieldNotes:
 			values[i] = new(sql.NullString)
@@ -165,6 +167,12 @@ func (_m *Borrower) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.IsActive = value.Bool
 			}
+		case borrower.FieldSelfRegistered:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field self_registered", values[i])
+			} else if value.Valid {
+				_m.SelfRegistered = value.Bool
+			}
 		case borrower.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field group_borrowers", values[i])
@@ -244,6 +252,9 @@ func (_m *Borrower) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("is_active=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsActive))
+	builder.WriteString(", ")
+	builder.WriteString("self_registered=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SelfRegistered))
 	builder.WriteByte(')')
 	return builder.String()
 }

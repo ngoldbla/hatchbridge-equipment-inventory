@@ -159,6 +159,20 @@ func (_u *BorrowerUpdate) SetNillableIsActive(v *bool) *BorrowerUpdate {
 	return _u
 }
 
+// SetSelfRegistered sets the "self_registered" field.
+func (_u *BorrowerUpdate) SetSelfRegistered(v bool) *BorrowerUpdate {
+	_u.mutation.SetSelfRegistered(v)
+	return _u
+}
+
+// SetNillableSelfRegistered sets the "self_registered" field if the given value is not nil.
+func (_u *BorrowerUpdate) SetNillableSelfRegistered(v *bool) *BorrowerUpdate {
+	if v != nil {
+		_u.SetSelfRegistered(*v)
+	}
+	return _u
+}
+
 // SetGroupID sets the "group" edge to the Group entity by ID.
 func (_u *BorrowerUpdate) SetGroupID(id uuid.UUID) *BorrowerUpdate {
 	_u.mutation.SetGroupID(id)
@@ -338,6 +352,9 @@ func (_u *BorrowerUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.IsActive(); ok {
 		_spec.SetField(borrower.FieldIsActive, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SelfRegistered(); ok {
+		_spec.SetField(borrower.FieldSelfRegistered, field.TypeBool, value)
 	}
 	if _u.mutation.GroupCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -561,6 +578,20 @@ func (_u *BorrowerUpdateOne) SetNillableIsActive(v *bool) *BorrowerUpdateOne {
 	return _u
 }
 
+// SetSelfRegistered sets the "self_registered" field.
+func (_u *BorrowerUpdateOne) SetSelfRegistered(v bool) *BorrowerUpdateOne {
+	_u.mutation.SetSelfRegistered(v)
+	return _u
+}
+
+// SetNillableSelfRegistered sets the "self_registered" field if the given value is not nil.
+func (_u *BorrowerUpdateOne) SetNillableSelfRegistered(v *bool) *BorrowerUpdateOne {
+	if v != nil {
+		_u.SetSelfRegistered(*v)
+	}
+	return _u
+}
+
 // SetGroupID sets the "group" edge to the Group entity by ID.
 func (_u *BorrowerUpdateOne) SetGroupID(id uuid.UUID) *BorrowerUpdateOne {
 	_u.mutation.SetGroupID(id)
@@ -770,6 +801,9 @@ func (_u *BorrowerUpdateOne) sqlSave(ctx context.Context) (_node *Borrower, err 
 	}
 	if value, ok := _u.mutation.IsActive(); ok {
 		_spec.SetField(borrower.FieldIsActive, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SelfRegistered(); ok {
+		_spec.SetField(borrower.FieldSelfRegistered, field.TypeBool, value)
 	}
 	if _u.mutation.GroupCleared() {
 		edge := &sqlgraph.EdgeSpec{
