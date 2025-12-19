@@ -17,8 +17,9 @@ func (AuthRoles) Fields() []ent.Field {
 		field.Enum("role").
 			Default("user").
 			Values(
-				"admin",       // can do everything - currently unused
+				"admin",       // can do everything
 				"user",        // default login role
+				"kiosk",       // restricted self-service mode
 				"attachments", // Read Attachments
 			),
 	}

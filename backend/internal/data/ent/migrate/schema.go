@@ -44,7 +44,7 @@ var (
 	// AuthRolesColumns holds the columns for the "auth_roles" table.
 	AuthRolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "user", "attachments"}, Default: "user"},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "user", "kiosk", "attachments"}, Default: "user"},
 		{Name: "auth_tokens_roles", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// AuthRolesTable holds the schema information for the "auth_roles" table.
@@ -103,6 +103,7 @@ var (
 		{Name: "student_id", Type: field.TypeString, Nullable: true, Size: 100},
 		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 1000},
 		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "self_registered", Type: field.TypeBool, Default: false},
 		{Name: "group_borrowers", Type: field.TypeUUID},
 	}
 	// BorrowersTable holds the schema information for the "borrowers" table.
@@ -113,7 +114,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "borrowers_groups_borrowers",
-				Columns:    []*schema.Column{BorrowersColumns[10]},
+				Columns:    []*schema.Column{BorrowersColumns[11]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -341,6 +342,36 @@ var (
 			},
 		},
 	}
+	// KioskSessionsColumns holds the columns for the "kiosk_sessions" table.
+	KioskSessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "unlocked_until", Type: field.TypeTime, Nullable: true},
+		{Name: "user_kiosk_session", Type: field.TypeUUID, Unique: true},
+	}
+	// KioskSessionsTable holds the schema information for the "kiosk_sessions" table.
+	KioskSessionsTable = &schema.Table{
+		Name:       "kiosk_sessions",
+		Columns:    KioskSessionsColumns,
+		PrimaryKey: []*schema.Column{KioskSessionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "kiosk_sessions_users_kiosk_session",
+				Columns:    []*schema.Column{KioskSessionsColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "kiosksession_is_active",
+				Unique:  false,
+				Columns: []*schema.Column{KioskSessionsColumns[3]},
+			},
+		},
+	}
 	// LabelsColumns holds the columns for the "labels" table.
 	LabelsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -376,6 +407,7 @@ var (
 		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 1000},
 		{Name: "return_notes", Type: field.TypeString, Nullable: true, Size: 1000},
 		{Name: "quantity", Type: field.TypeInt, Default: 1},
+		{Name: "kiosk_action", Type: field.TypeBool, Default: false},
 		{Name: "borrower_loans", Type: field.TypeUUID},
 		{Name: "group_loans", Type: field.TypeUUID},
 		{Name: "item_loans", Type: field.TypeUUID},
@@ -390,31 +422,31 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "loans_borrowers_loans",
-				Columns:    []*schema.Column{LoansColumns[9]},
+				Columns:    []*schema.Column{LoansColumns[10]},
 				RefColumns: []*schema.Column{BorrowersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "loans_groups_loans",
-				Columns:    []*schema.Column{LoansColumns[10]},
+				Columns:    []*schema.Column{LoansColumns[11]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "loans_items_loans",
-				Columns:    []*schema.Column{LoansColumns[11]},
+				Columns:    []*schema.Column{LoansColumns[12]},
 				RefColumns: []*schema.Column{ItemsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "loans_users_checkouts",
-				Columns:    []*schema.Column{LoansColumns[12]},
+				Columns:    []*schema.Column{LoansColumns[13]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "loans_users_returns",
-				Columns:    []*schema.Column{LoansColumns[13]},
+				Columns:    []*schema.Column{LoansColumns[14]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -644,6 +676,7 @@ var (
 		ItemsTable,
 		ItemFieldsTable,
 		ItemTemplatesTable,
+		KioskSessionsTable,
 		LabelsTable,
 		LoansTable,
 		LocationsTable,
@@ -668,6 +701,7 @@ func init() {
 	ItemFieldsTable.ForeignKeys[0].RefTable = ItemsTable
 	ItemTemplatesTable.ForeignKeys[0].RefTable = GroupsTable
 	ItemTemplatesTable.ForeignKeys[1].RefTable = LocationsTable
+	KioskSessionsTable.ForeignKeys[0].RefTable = UsersTable
 	LabelsTable.ForeignKeys[0].RefTable = GroupsTable
 	LoansTable.ForeignKeys[0].RefTable = BorrowersTable
 	LoansTable.ForeignKeys[1].RefTable = GroupsTable

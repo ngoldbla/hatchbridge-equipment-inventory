@@ -25,6 +25,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/item"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/itemtemplate"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/kiosksession"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/label"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/location"
@@ -57,6 +58,8 @@ type Client struct {
 	ItemField *ItemFieldClient
 	// ItemTemplate is the client for interacting with the ItemTemplate builders.
 	ItemTemplate *ItemTemplateClient
+	// KioskSession is the client for interacting with the KioskSession builders.
+	KioskSession *KioskSessionClient
 	// Label is the client for interacting with the Label builders.
 	Label *LabelClient
 	// Loan is the client for interacting with the Loan builders.
@@ -91,6 +94,7 @@ func (c *Client) init() {
 	c.Item = NewItemClient(c.config)
 	c.ItemField = NewItemFieldClient(c.config)
 	c.ItemTemplate = NewItemTemplateClient(c.config)
+	c.KioskSession = NewKioskSessionClient(c.config)
 	c.Label = NewLabelClient(c.config)
 	c.Loan = NewLoanClient(c.config)
 	c.Location = NewLocationClient(c.config)
@@ -199,6 +203,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Item:                 NewItemClient(cfg),
 		ItemField:            NewItemFieldClient(cfg),
 		ItemTemplate:         NewItemTemplateClient(cfg),
+		KioskSession:         NewKioskSessionClient(cfg),
 		Label:                NewLabelClient(cfg),
 		Loan:                 NewLoanClient(cfg),
 		Location:             NewLocationClient(cfg),
@@ -234,6 +239,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Item:                 NewItemClient(cfg),
 		ItemField:            NewItemFieldClient(cfg),
 		ItemTemplate:         NewItemTemplateClient(cfg),
+		KioskSession:         NewKioskSessionClient(cfg),
 		Label:                NewLabelClient(cfg),
 		Loan:                 NewLoanClient(cfg),
 		Location:             NewLocationClient(cfg),
@@ -271,8 +277,9 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Attachment, c.AuthRoles, c.AuthTokens, c.Borrower, c.Group,
-		c.GroupInvitationToken, c.Item, c.ItemField, c.ItemTemplate, c.Label, c.Loan,
-		c.Location, c.MaintenanceEntry, c.Notifier, c.TemplateField, c.User,
+		c.GroupInvitationToken, c.Item, c.ItemField, c.ItemTemplate, c.KioskSession,
+		c.Label, c.Loan, c.Location, c.MaintenanceEntry, c.Notifier, c.TemplateField,
+		c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -283,8 +290,9 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Attachment, c.AuthRoles, c.AuthTokens, c.Borrower, c.Group,
-		c.GroupInvitationToken, c.Item, c.ItemField, c.ItemTemplate, c.Label, c.Loan,
-		c.Location, c.MaintenanceEntry, c.Notifier, c.TemplateField, c.User,
+		c.GroupInvitationToken, c.Item, c.ItemField, c.ItemTemplate, c.KioskSession,
+		c.Label, c.Loan, c.Location, c.MaintenanceEntry, c.Notifier, c.TemplateField,
+		c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -311,6 +319,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ItemField.mutate(ctx, m)
 	case *ItemTemplateMutation:
 		return c.ItemTemplate.mutate(ctx, m)
+	case *KioskSessionMutation:
+		return c.KioskSession.mutate(ctx, m)
 	case *LabelMutation:
 		return c.Label.mutate(ctx, m)
 	case *LoanMutation:
@@ -2007,6 +2017,155 @@ func (c *ItemTemplateClient) mutate(ctx context.Context, m *ItemTemplateMutation
 	}
 }
 
+// KioskSessionClient is a client for the KioskSession schema.
+type KioskSessionClient struct {
+	config
+}
+
+// NewKioskSessionClient returns a client for the KioskSession from the given config.
+func NewKioskSessionClient(c config) *KioskSessionClient {
+	return &KioskSessionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `kiosksession.Hooks(f(g(h())))`.
+func (c *KioskSessionClient) Use(hooks ...Hook) {
+	c.hooks.KioskSession = append(c.hooks.KioskSession, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `kiosksession.Intercept(f(g(h())))`.
+func (c *KioskSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KioskSession = append(c.inters.KioskSession, interceptors...)
+}
+
+// Create returns a builder for creating a KioskSession entity.
+func (c *KioskSessionClient) Create() *KioskSessionCreate {
+	mutation := newKioskSessionMutation(c.config, OpCreate)
+	return &KioskSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KioskSession entities.
+func (c *KioskSessionClient) CreateBulk(builders ...*KioskSessionCreate) *KioskSessionCreateBulk {
+	return &KioskSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KioskSessionClient) MapCreateBulk(slice any, setFunc func(*KioskSessionCreate, int)) *KioskSessionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KioskSessionCreateBulk{err: fmt.Errorf("calling to KioskSessionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KioskSessionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KioskSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KioskSession.
+func (c *KioskSessionClient) Update() *KioskSessionUpdate {
+	mutation := newKioskSessionMutation(c.config, OpUpdate)
+	return &KioskSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KioskSessionClient) UpdateOne(_m *KioskSession) *KioskSessionUpdateOne {
+	mutation := newKioskSessionMutation(c.config, OpUpdateOne, withKioskSession(_m))
+	return &KioskSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KioskSessionClient) UpdateOneID(id uuid.UUID) *KioskSessionUpdateOne {
+	mutation := newKioskSessionMutation(c.config, OpUpdateOne, withKioskSessionID(id))
+	return &KioskSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KioskSession.
+func (c *KioskSessionClient) Delete() *KioskSessionDelete {
+	mutation := newKioskSessionMutation(c.config, OpDelete)
+	return &KioskSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KioskSessionClient) DeleteOne(_m *KioskSession) *KioskSessionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KioskSessionClient) DeleteOneID(id uuid.UUID) *KioskSessionDeleteOne {
+	builder := c.Delete().Where(kiosksession.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KioskSessionDeleteOne{builder}
+}
+
+// Query returns a query builder for KioskSession.
+func (c *KioskSessionClient) Query() *KioskSessionQuery {
+	return &KioskSessionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKioskSession},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KioskSession entity by its id.
+func (c *KioskSessionClient) Get(ctx context.Context, id uuid.UUID) (*KioskSession, error) {
+	return c.Query().Where(kiosksession.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KioskSessionClient) GetX(ctx context.Context, id uuid.UUID) *KioskSession {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a KioskSession.
+func (c *KioskSessionClient) QueryUser(_m *KioskSession) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kiosksession.Table, kiosksession.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, kiosksession.UserTable, kiosksession.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KioskSessionClient) Hooks() []Hook {
+	return c.hooks.KioskSession
+}
+
+// Interceptors returns the client interceptors.
+func (c *KioskSessionClient) Interceptors() []Interceptor {
+	return c.inters.KioskSession
+}
+
+func (c *KioskSessionClient) mutate(ctx context.Context, m *KioskSessionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KioskSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KioskSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KioskSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KioskSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KioskSession mutation op: %q", m.Op())
+	}
+}
+
 // LabelClient is a client for the Label schema.
 type LabelClient struct {
 	config
@@ -3233,6 +3392,22 @@ func (c *UserClient) QueryReturns(_m *User) *LoanQuery {
 	return query
 }
 
+// QueryKioskSession queries the kiosk_session edge of a User.
+func (c *UserClient) QueryKioskSession(_m *User) *KioskSessionQuery {
+	query := (&KioskSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(kiosksession.Table, kiosksession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.KioskSessionTable, user.KioskSessionColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -3262,12 +3437,12 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 type (
 	hooks struct {
 		Attachment, AuthRoles, AuthTokens, Borrower, Group, GroupInvitationToken, Item,
-		ItemField, ItemTemplate, Label, Loan, Location, MaintenanceEntry, Notifier,
-		TemplateField, User []ent.Hook
+		ItemField, ItemTemplate, KioskSession, Label, Loan, Location, MaintenanceEntry,
+		Notifier, TemplateField, User []ent.Hook
 	}
 	inters struct {
 		Attachment, AuthRoles, AuthTokens, Borrower, Group, GroupInvitationToken, Item,
-		ItemField, ItemTemplate, Label, Loan, Location, MaintenanceEntry, Notifier,
-		TemplateField, User []ent.Interceptor
+		ItemField, ItemTemplate, KioskSession, Label, Loan, Location, MaintenanceEntry,
+		Notifier, TemplateField, User []ent.Interceptor
 	}
 )

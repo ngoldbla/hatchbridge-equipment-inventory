@@ -746,6 +746,29 @@ func HasReturnsWith(preds ...predicate.Loan) predicate.User {
 	})
 }
 
+// HasKioskSession applies the HasEdge predicate on the "kiosk_session" edge.
+func HasKioskSession() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, KioskSessionTable, KioskSessionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasKioskSessionWith applies the HasEdge predicate on the "kiosk_session" edge with a given conditions (other predicates).
+func HasKioskSessionWith(preds ...predicate.KioskSession) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newKioskSessionStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

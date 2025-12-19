@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authtokens"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/kiosksession"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/loan"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
@@ -24,16 +25,17 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx            *QueryContext
-	order          []user.OrderOption
-	inters         []Interceptor
-	predicates     []predicate.User
-	withGroup      *GroupQuery
-	withAuthTokens *AuthTokensQuery
-	withNotifiers  *NotifierQuery
-	withCheckouts  *LoanQuery
-	withReturns    *LoanQuery
-	withFKs        bool
+	ctx              *QueryContext
+	order            []user.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.User
+	withGroup        *GroupQuery
+	withAuthTokens   *AuthTokensQuery
+	withNotifiers    *NotifierQuery
+	withCheckouts    *LoanQuery
+	withReturns      *LoanQuery
+	withKioskSession *KioskSessionQuery
+	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -173,6 +175,28 @@ func (_q *UserQuery) QueryReturns() *LoanQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(loan.Table, loan.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.ReturnsTable, user.ReturnsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryKioskSession chains the current query on the "kiosk_session" edge.
+func (_q *UserQuery) QueryKioskSession() *KioskSessionQuery {
+	query := (&KioskSessionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(kiosksession.Table, kiosksession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.KioskSessionTable, user.KioskSessionColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -367,16 +391,17 @@ func (_q *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:         _q.config,
-		ctx:            _q.ctx.Clone(),
-		order:          append([]user.OrderOption{}, _q.order...),
-		inters:         append([]Interceptor{}, _q.inters...),
-		predicates:     append([]predicate.User{}, _q.predicates...),
-		withGroup:      _q.withGroup.Clone(),
-		withAuthTokens: _q.withAuthTokens.Clone(),
-		withNotifiers:  _q.withNotifiers.Clone(),
-		withCheckouts:  _q.withCheckouts.Clone(),
-		withReturns:    _q.withReturns.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]user.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.User{}, _q.predicates...),
+		withGroup:        _q.withGroup.Clone(),
+		withAuthTokens:   _q.withAuthTokens.Clone(),
+		withNotifiers:    _q.withNotifiers.Clone(),
+		withCheckouts:    _q.withCheckouts.Clone(),
+		withReturns:      _q.withReturns.Clone(),
+		withKioskSession: _q.withKioskSession.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -435,6 +460,17 @@ func (_q *UserQuery) WithReturns(opts ...func(*LoanQuery)) *UserQuery {
 		opt(query)
 	}
 	_q.withReturns = query
+	return _q
+}
+
+// WithKioskSession tells the query-builder to eager-load the nodes that are connected to
+// the "kiosk_session" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithKioskSession(opts ...func(*KioskSessionQuery)) *UserQuery {
+	query := (&KioskSessionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withKioskSession = query
 	return _q
 }
 
@@ -517,12 +553,13 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		nodes       = []*User{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withGroup != nil,
 			_q.withAuthTokens != nil,
 			_q.withNotifiers != nil,
 			_q.withCheckouts != nil,
 			_q.withReturns != nil,
+			_q.withKioskSession != nil,
 		}
 	)
 	if _q.withGroup != nil {
@@ -580,6 +617,12 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadReturns(ctx, query, nodes,
 			func(n *User) { n.Edges.Returns = []*Loan{} },
 			func(n *User, e *Loan) { n.Edges.Returns = append(n.Edges.Returns, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withKioskSession; query != nil {
+		if err := _q.loadKioskSession(ctx, query, nodes, nil,
+			func(n *User, e *KioskSession) { n.Edges.KioskSession = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -736,6 +779,34 @@ func (_q *UserQuery) loadReturns(ctx context.Context, query *LoanQuery, nodes []
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_returns" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadKioskSession(ctx context.Context, query *KioskSessionQuery, nodes []*User, init func(*User), assign func(*User, *KioskSession)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.KioskSession(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.KioskSessionColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_kiosk_session
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_kiosk_session" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_kiosk_session" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -33,6 +33,8 @@ const (
 	FieldNotes = "notes"
 	// FieldIsActive holds the string denoting the is_active field in the database.
 	FieldIsActive = "is_active"
+	// FieldSelfRegistered holds the string denoting the self_registered field in the database.
+	FieldSelfRegistered = "self_registered"
 	// EdgeGroup holds the string denoting the group edge name in mutations.
 	EdgeGroup = "group"
 	// EdgeLoans holds the string denoting the loans edge name in mutations.
@@ -67,6 +69,7 @@ var Columns = []string{
 	FieldStudentID,
 	FieldNotes,
 	FieldIsActive,
+	FieldSelfRegistered,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "borrowers"
@@ -111,6 +114,8 @@ var (
 	NotesValidator func(string) error
 	// DefaultIsActive holds the default value on creation for the "is_active" field.
 	DefaultIsActive bool
+	// DefaultSelfRegistered holds the default value on creation for the "self_registered" field.
+	DefaultSelfRegistered bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -166,6 +171,11 @@ func ByNotes(opts ...sql.OrderTermOption) OrderOption {
 // ByIsActive orders the results by the is_active field.
 func ByIsActive(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsActive, opts...).ToFunc()
+}
+
+// BySelfRegistered orders the results by the self_registered field.
+func BySelfRegistered(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSelfRegistered, opts...).ToFunc()
 }
 
 // ByGroupField orders the results by group field.

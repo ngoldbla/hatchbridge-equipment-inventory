@@ -48,6 +48,8 @@ const (
 	EdgeCheckouts = "checkouts"
 	// EdgeReturns holds the string denoting the returns edge name in mutations.
 	EdgeReturns = "returns"
+	// EdgeKioskSession holds the string denoting the kiosk_session edge name in mutations.
+	EdgeKioskSession = "kiosk_session"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// GroupTable is the table that holds the group relation/edge.
@@ -85,6 +87,13 @@ const (
 	ReturnsInverseTable = "loans"
 	// ReturnsColumn is the table column denoting the returns relation/edge.
 	ReturnsColumn = "user_returns"
+	// KioskSessionTable is the table that holds the kiosk_session relation/edge.
+	KioskSessionTable = "kiosk_sessions"
+	// KioskSessionInverseTable is the table name for the KioskSession entity.
+	// It exists in this package in order to avoid circular dependency with the "kiosksession" package.
+	KioskSessionInverseTable = "kiosk_sessions"
+	// KioskSessionColumn is the table column denoting the kiosk_session relation/edge.
+	KioskSessionColumn = "user_kiosk_session"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -296,6 +305,13 @@ func ByReturns(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newReturnsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByKioskSessionField orders the results by kiosk_session field.
+func ByKioskSessionField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newKioskSessionStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newGroupStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -329,5 +345,12 @@ func newReturnsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ReturnsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ReturnsTable, ReturnsColumn),
+	)
+}
+func newKioskSessionStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(KioskSessionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, KioskSessionTable, KioskSessionColumn),
 	)
 }

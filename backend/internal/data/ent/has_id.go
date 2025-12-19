@@ -40,6 +40,10 @@ func (_m *ItemTemplate) GetID() uuid.UUID {
 	return _m.ID
 }
 
+func (_m *KioskSession) GetID() uuid.UUID {
+	return _m.ID
+}
+
 func (_m *Label) GetID() uuid.UUID {
 	return _m.ID
 }

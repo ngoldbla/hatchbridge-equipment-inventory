@@ -55,6 +55,9 @@ func (Loan) Fields() []ent.Field {
 			Default(1).
 			Positive().
 			Comment("Number of items borrowed (for items with quantity > 1)"),
+		field.Bool("kiosk_action").
+			Default(false).
+			Comment("Whether this loan was created/returned via kiosk self-service"),
 	}
 }
 

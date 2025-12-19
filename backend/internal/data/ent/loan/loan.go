@@ -31,6 +31,8 @@ const (
 	FieldReturnNotes = "return_notes"
 	// FieldQuantity holds the string denoting the quantity field in the database.
 	FieldQuantity = "quantity"
+	// FieldKioskAction holds the string denoting the kiosk_action field in the database.
+	FieldKioskAction = "kiosk_action"
 	// EdgeGroup holds the string denoting the group edge name in mutations.
 	EdgeGroup = "group"
 	// EdgeItem holds the string denoting the item edge name in mutations.
@@ -91,6 +93,7 @@ var Columns = []string{
 	FieldNotes,
 	FieldReturnNotes,
 	FieldQuantity,
+	FieldKioskAction,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "loans"
@@ -135,6 +138,8 @@ var (
 	DefaultQuantity int
 	// QuantityValidator is a validator for the "quantity" field. It is called by the builders before save.
 	QuantityValidator func(int) error
+	// DefaultKioskAction holds the default value on creation for the "kiosk_action" field.
+	DefaultKioskAction bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -185,6 +190,11 @@ func ByReturnNotes(opts ...sql.OrderTermOption) OrderOption {
 // ByQuantity orders the results by the quantity field.
 func ByQuantity(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldQuantity, opts...).ToFunc()
+}
+
+// ByKioskAction orders the results by the kiosk_action field.
+func ByKioskAction(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKioskAction, opts...).ToFunc()
 }
 
 // ByGroupField orders the results by group field.

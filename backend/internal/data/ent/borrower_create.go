@@ -133,6 +133,20 @@ func (_c *BorrowerCreate) SetNillableIsActive(v *bool) *BorrowerCreate {
 	return _c
 }
 
+// SetSelfRegistered sets the "self_registered" field.
+func (_c *BorrowerCreate) SetSelfRegistered(v bool) *BorrowerCreate {
+	_c.mutation.SetSelfRegistered(v)
+	return _c
+}
+
+// SetNillableSelfRegistered sets the "self_registered" field if the given value is not nil.
+func (_c *BorrowerCreate) SetNillableSelfRegistered(v *bool) *BorrowerCreate {
+	if v != nil {
+		_c.SetSelfRegistered(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *BorrowerCreate) SetID(v uuid.UUID) *BorrowerCreate {
 	_c.mutation.SetID(v)
@@ -220,6 +234,10 @@ func (_c *BorrowerCreate) defaults() {
 		v := borrower.DefaultIsActive
 		_c.mutation.SetIsActive(v)
 	}
+	if _, ok := _c.mutation.SelfRegistered(); !ok {
+		v := borrower.DefaultSelfRegistered
+		_c.mutation.SetSelfRegistered(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := borrower.DefaultID()
 		_c.mutation.SetID(v)
@@ -272,6 +290,9 @@ func (_c *BorrowerCreate) check() error {
 	}
 	if _, ok := _c.mutation.IsActive(); !ok {
 		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "Borrower.is_active"`)}
+	}
+	if _, ok := _c.mutation.SelfRegistered(); !ok {
+		return &ValidationError{Name: "self_registered", err: errors.New(`ent: missing required field "Borrower.self_registered"`)}
 	}
 	if len(_c.mutation.GroupIDs()) == 0 {
 		return &ValidationError{Name: "group", err: errors.New(`ent: missing required edge "Borrower.group"`)}
@@ -346,6 +367,10 @@ func (_c *BorrowerCreate) createSpec() (*Borrower, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IsActive(); ok {
 		_spec.SetField(borrower.FieldIsActive, field.TypeBool, value)
 		_node.IsActive = value
+	}
+	if value, ok := _c.mutation.SelfRegistered(); ok {
+		_spec.SetField(borrower.FieldSelfRegistered, field.TypeBool, value)
+		_node.SelfRegistered = value
 	}
 	if nodes := _c.mutation.GroupIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

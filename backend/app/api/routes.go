@@ -83,17 +83,21 @@ func (a *app) mountRoutes(r *chi.Mux, chain *errchain.ErrChain, repos *repo.AllR
 		userMW := []errchain.Middleware{
 			a.mwAuthToken,
 			a.mwRoles(RoleModeOr, authroles.RoleUser.String()),
+			a.mwKioskContext, // Add kiosk state to context
 		}
+
+		// Middleware that blocks operations when in kiosk mode (unless unlocked)
+		kioskRestrictMW := append(userMW, a.mwKioskRestrict)
 
 		r.Get("/ws/events", chain.ToHandlerFunc(v1Ctrl.HandleCacheWS(), userMW...))
 		r.Get("/users/self", chain.ToHandlerFunc(v1Ctrl.HandleUserSelf(), userMW...))
-		r.Put("/users/self", chain.ToHandlerFunc(v1Ctrl.HandleUserSelfUpdate(), userMW...))
-		r.Delete("/users/self", chain.ToHandlerFunc(v1Ctrl.HandleUserSelfDelete(), userMW...))
+		r.Put("/users/self", chain.ToHandlerFunc(v1Ctrl.HandleUserSelfUpdate(), kioskRestrictMW...))
+		r.Delete("/users/self", chain.ToHandlerFunc(v1Ctrl.HandleUserSelfDelete(), kioskRestrictMW...))
 		r.Post("/users/logout", chain.ToHandlerFunc(v1Ctrl.HandleAuthLogout(), userMW...))
 		r.Get("/users/refresh", chain.ToHandlerFunc(v1Ctrl.HandleAuthRefresh(), userMW...))
-		r.Put("/users/self/change-password", chain.ToHandlerFunc(v1Ctrl.HandleUserSelfChangePassword(), userMW...))
+		r.Put("/users/self/change-password", chain.ToHandlerFunc(v1Ctrl.HandleUserSelfChangePassword(), kioskRestrictMW...))
 
-		r.Post("/groups/invitations", chain.ToHandlerFunc(v1Ctrl.HandleGroupInvitationsCreate(), userMW...))
+		r.Post("/groups/invitations", chain.ToHandlerFunc(v1Ctrl.HandleGroupInvitationsCreate(), kioskRestrictMW...))
 		r.Get("/groups/statistics", chain.ToHandlerFunc(v1Ctrl.HandleGroupStatistics(), userMW...))
 		r.Get("/groups/statistics/purchase-price", chain.ToHandlerFunc(v1Ctrl.HandleGroupStatisticsPriceOverTime(), userMW...))
 		r.Get("/groups/statistics/locations", chain.ToHandlerFunc(v1Ctrl.HandleGroupStatisticsLocations(), userMW...))
@@ -101,91 +105,101 @@ func (a *app) mountRoutes(r *chi.Mux, chain *errchain.ErrChain, repos *repo.AllR
 
 		// TODO: I don't like /groups being the URL for users
 		r.Get("/groups", chain.ToHandlerFunc(v1Ctrl.HandleGroupGet(), userMW...))
-		r.Put("/groups", chain.ToHandlerFunc(v1Ctrl.HandleGroupUpdate(), userMW...))
+		r.Put("/groups", chain.ToHandlerFunc(v1Ctrl.HandleGroupUpdate(), kioskRestrictMW...))
 
-		r.Post("/actions/ensure-asset-ids", chain.ToHandlerFunc(v1Ctrl.HandleEnsureAssetID(), userMW...))
-		r.Post("/actions/zero-item-time-fields", chain.ToHandlerFunc(v1Ctrl.HandleItemDateZeroOut(), userMW...))
-		r.Post("/actions/ensure-import-refs", chain.ToHandlerFunc(v1Ctrl.HandleEnsureImportRefs(), userMW...))
-		r.Post("/actions/set-primary-photos", chain.ToHandlerFunc(v1Ctrl.HandleSetPrimaryPhotos(), userMW...))
-		r.Post("/actions/create-missing-thumbnails", chain.ToHandlerFunc(v1Ctrl.HandleCreateMissingThumbnails(), userMW...))
+		r.Post("/actions/ensure-asset-ids", chain.ToHandlerFunc(v1Ctrl.HandleEnsureAssetID(), kioskRestrictMW...))
+		r.Post("/actions/zero-item-time-fields", chain.ToHandlerFunc(v1Ctrl.HandleItemDateZeroOut(), kioskRestrictMW...))
+		r.Post("/actions/ensure-import-refs", chain.ToHandlerFunc(v1Ctrl.HandleEnsureImportRefs(), kioskRestrictMW...))
+		r.Post("/actions/set-primary-photos", chain.ToHandlerFunc(v1Ctrl.HandleSetPrimaryPhotos(), kioskRestrictMW...))
+		r.Post("/actions/create-missing-thumbnails", chain.ToHandlerFunc(v1Ctrl.HandleCreateMissingThumbnails(), kioskRestrictMW...))
 
+		// Locations - read allowed, write restricted in kiosk mode
 		r.Get("/locations", chain.ToHandlerFunc(v1Ctrl.HandleLocationGetAll(), userMW...))
-		r.Post("/locations", chain.ToHandlerFunc(v1Ctrl.HandleLocationCreate(), userMW...))
+		r.Post("/locations", chain.ToHandlerFunc(v1Ctrl.HandleLocationCreate(), kioskRestrictMW...))
 		r.Get("/locations/tree", chain.ToHandlerFunc(v1Ctrl.HandleLocationTreeQuery(), userMW...))
 		r.Get("/locations/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLocationGet(), userMW...))
-		r.Put("/locations/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLocationUpdate(), userMW...))
-		r.Delete("/locations/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLocationDelete(), userMW...))
+		r.Put("/locations/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLocationUpdate(), kioskRestrictMW...))
+		r.Delete("/locations/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLocationDelete(), kioskRestrictMW...))
 
+		// Labels - read allowed, write restricted in kiosk mode
 		r.Get("/labels", chain.ToHandlerFunc(v1Ctrl.HandleLabelsGetAll(), userMW...))
-		r.Post("/labels", chain.ToHandlerFunc(v1Ctrl.HandleLabelsCreate(), userMW...))
+		r.Post("/labels", chain.ToHandlerFunc(v1Ctrl.HandleLabelsCreate(), kioskRestrictMW...))
 		r.Get("/labels/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLabelGet(), userMW...))
-		r.Put("/labels/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLabelUpdate(), userMW...))
-		r.Delete("/labels/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLabelDelete(), userMW...))
+		r.Put("/labels/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLabelUpdate(), kioskRestrictMW...))
+		r.Delete("/labels/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLabelDelete(), kioskRestrictMW...))
 
+		// Items - read allowed, create/update/delete restricted in kiosk mode
 		r.Get("/items", chain.ToHandlerFunc(v1Ctrl.HandleItemsGetAll(), userMW...))
-		r.Post("/items", chain.ToHandlerFunc(v1Ctrl.HandleItemsCreate(), userMW...))
-		r.Post("/items/import", chain.ToHandlerFunc(v1Ctrl.HandleItemsImport(), userMW...))
+		r.Post("/items", chain.ToHandlerFunc(v1Ctrl.HandleItemsCreate(), kioskRestrictMW...))
+		r.Post("/items/import", chain.ToHandlerFunc(v1Ctrl.HandleItemsImport(), kioskRestrictMW...))
 		r.Get("/items/export", chain.ToHandlerFunc(v1Ctrl.HandleItemsExport(), userMW...))
 		r.Get("/items/fields", chain.ToHandlerFunc(v1Ctrl.HandleGetAllCustomFieldNames(), userMW...))
 		r.Get("/items/fields/values", chain.ToHandlerFunc(v1Ctrl.HandleGetAllCustomFieldValues(), userMW...))
 
 		r.Get("/items/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemGet(), userMW...))
 		r.Get("/items/{id}/path", chain.ToHandlerFunc(v1Ctrl.HandleItemFullPath(), userMW...))
-		r.Put("/items/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemUpdate(), userMW...))
-		r.Patch("/items/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemPatch(), userMW...))
-		r.Delete("/items/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemDelete(), userMW...))
-		r.Post("/items/{id}/duplicate", chain.ToHandlerFunc(v1Ctrl.HandleItemDuplicate(), userMW...))
+		r.Put("/items/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemUpdate(), kioskRestrictMW...))
+		r.Patch("/items/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemPatch(), kioskRestrictMW...))
+		r.Delete("/items/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemDelete(), kioskRestrictMW...))
+		r.Post("/items/{id}/duplicate", chain.ToHandlerFunc(v1Ctrl.HandleItemDuplicate(), kioskRestrictMW...))
 
-		r.Post("/items/{id}/attachments", chain.ToHandlerFunc(v1Ctrl.HandleItemAttachmentCreate(), userMW...))
-		r.Put("/items/{id}/attachments/{attachment_id}", chain.ToHandlerFunc(v1Ctrl.HandleItemAttachmentUpdate(), userMW...))
-		r.Delete("/items/{id}/attachments/{attachment_id}", chain.ToHandlerFunc(v1Ctrl.HandleItemAttachmentDelete(), userMW...))
+		r.Post("/items/{id}/attachments", chain.ToHandlerFunc(v1Ctrl.HandleItemAttachmentCreate(), kioskRestrictMW...))
+		r.Put("/items/{id}/attachments/{attachment_id}", chain.ToHandlerFunc(v1Ctrl.HandleItemAttachmentUpdate(), kioskRestrictMW...))
+		r.Delete("/items/{id}/attachments/{attachment_id}", chain.ToHandlerFunc(v1Ctrl.HandleItemAttachmentDelete(), kioskRestrictMW...))
 
 		r.Get("/items/{id}/maintenance", chain.ToHandlerFunc(v1Ctrl.HandleMaintenanceLogGet(), userMW...))
-		r.Post("/items/{id}/maintenance", chain.ToHandlerFunc(v1Ctrl.HandleMaintenanceEntryCreate(), userMW...))
+		r.Post("/items/{id}/maintenance", chain.ToHandlerFunc(v1Ctrl.HandleMaintenanceEntryCreate(), kioskRestrictMW...))
 
 		r.Get("/assets/{id}", chain.ToHandlerFunc(v1Ctrl.HandleAssetGet(), userMW...))
 
-		// Item Templates
+		// Item Templates - all restricted in kiosk mode
 		r.Get("/templates", chain.ToHandlerFunc(v1Ctrl.HandleItemTemplatesGetAll(), userMW...))
-		r.Post("/templates", chain.ToHandlerFunc(v1Ctrl.HandleItemTemplatesCreate(), userMW...))
+		r.Post("/templates", chain.ToHandlerFunc(v1Ctrl.HandleItemTemplatesCreate(), kioskRestrictMW...))
 		r.Get("/templates/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemTemplatesGet(), userMW...))
-		r.Put("/templates/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemTemplatesUpdate(), userMW...))
-		r.Delete("/templates/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemTemplatesDelete(), userMW...))
-		r.Post("/templates/{id}/create-item", chain.ToHandlerFunc(v1Ctrl.HandleItemTemplatesCreateItem(), userMW...))
+		r.Put("/templates/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemTemplatesUpdate(), kioskRestrictMW...))
+		r.Delete("/templates/{id}", chain.ToHandlerFunc(v1Ctrl.HandleItemTemplatesDelete(), kioskRestrictMW...))
+		r.Post("/templates/{id}/create-item", chain.ToHandlerFunc(v1Ctrl.HandleItemTemplatesCreateItem(), kioskRestrictMW...))
 
-		// Maintenance
+		// Maintenance - read allowed, write restricted in kiosk mode
 		r.Get("/maintenance", chain.ToHandlerFunc(v1Ctrl.HandleMaintenanceGetAll(), userMW...))
-		r.Put("/maintenance/{id}", chain.ToHandlerFunc(v1Ctrl.HandleMaintenanceEntryUpdate(), userMW...))
-		r.Delete("/maintenance/{id}", chain.ToHandlerFunc(v1Ctrl.HandleMaintenanceEntryDelete(), userMW...))
+		r.Put("/maintenance/{id}", chain.ToHandlerFunc(v1Ctrl.HandleMaintenanceEntryUpdate(), kioskRestrictMW...))
+		r.Delete("/maintenance/{id}", chain.ToHandlerFunc(v1Ctrl.HandleMaintenanceEntryDelete(), kioskRestrictMW...))
 
-		// Notifiers
+		// Notifiers - all restricted in kiosk mode
 		r.Get("/notifiers", chain.ToHandlerFunc(v1Ctrl.HandleGetUserNotifiers(), userMW...))
-		r.Post("/notifiers", chain.ToHandlerFunc(v1Ctrl.HandleCreateNotifier(), userMW...))
-		r.Put("/notifiers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleUpdateNotifier(), userMW...))
-		r.Delete("/notifiers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleDeleteNotifier(), userMW...))
-		r.Post("/notifiers/test", chain.ToHandlerFunc(v1Ctrl.HandlerNotifierTest(), userMW...))
+		r.Post("/notifiers", chain.ToHandlerFunc(v1Ctrl.HandleCreateNotifier(), kioskRestrictMW...))
+		r.Put("/notifiers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleUpdateNotifier(), kioskRestrictMW...))
+		r.Delete("/notifiers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleDeleteNotifier(), kioskRestrictMW...))
+		r.Post("/notifiers/test", chain.ToHandlerFunc(v1Ctrl.HandlerNotifierTest(), kioskRestrictMW...))
 
-		// Borrowers
+		// Borrowers - read allowed, create allowed (for self-registration), update/delete restricted
 		r.Get("/borrowers", chain.ToHandlerFunc(v1Ctrl.HandleBorrowersGetAll(), userMW...))
 		r.Get("/borrowers/active", chain.ToHandlerFunc(v1Ctrl.HandleBorrowersGetActive(), userMW...))
-		r.Post("/borrowers", chain.ToHandlerFunc(v1Ctrl.HandleBorrowersCreate(), userMW...))
+		r.Post("/borrowers", chain.ToHandlerFunc(v1Ctrl.HandleBorrowersCreate(), userMW...)) // ALLOWED in kiosk
 		r.Get("/borrowers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleBorrowerGet(), userMW...))
-		r.Put("/borrowers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleBorrowerUpdate(), userMW...))
-		r.Delete("/borrowers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleBorrowerDelete(), userMW...))
+		r.Put("/borrowers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleBorrowerUpdate(), kioskRestrictMW...))
+		r.Delete("/borrowers/{id}", chain.ToHandlerFunc(v1Ctrl.HandleBorrowerDelete(), kioskRestrictMW...))
 		r.Get("/borrowers/{id}/loans", chain.ToHandlerFunc(v1Ctrl.HandleBorrowerLoans(), userMW...))
 
-		// Loans (Equipment Checkout/Return)
+		// Loans - read allowed, create/return allowed (for kiosk checkout/return), update/delete restricted
 		r.Get("/loans", chain.ToHandlerFunc(v1Ctrl.HandleLoansGetActive(), userMW...))
 		r.Get("/loans/overdue", chain.ToHandlerFunc(v1Ctrl.HandleLoansGetOverdue(), userMW...))
-		r.Post("/loans", chain.ToHandlerFunc(v1Ctrl.HandleLoanCreate(), userMW...))
+		r.Post("/loans", chain.ToHandlerFunc(v1Ctrl.HandleLoanCreate(), userMW...)) // ALLOWED in kiosk
 		r.Get("/loans/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLoanGet(), userMW...))
-		r.Put("/loans/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLoanUpdate(), userMW...))
-		r.Delete("/loans/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLoanDelete(), userMW...))
-		r.Post("/loans/{id}/return", chain.ToHandlerFunc(v1Ctrl.HandleLoanReturn(), userMW...))
+		r.Put("/loans/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLoanUpdate(), kioskRestrictMW...))
+		r.Delete("/loans/{id}", chain.ToHandlerFunc(v1Ctrl.HandleLoanDelete(), kioskRestrictMW...))
+		r.Post("/loans/{id}/return", chain.ToHandlerFunc(v1Ctrl.HandleLoanReturn(), userMW...)) // ALLOWED in kiosk
 
 		// Item Loan History
 		r.Get("/items/{id}/loans", chain.ToHandlerFunc(v1Ctrl.HandleItemLoans(), userMW...))
 		r.Get("/items/{id}/current-loan", chain.ToHandlerFunc(v1Ctrl.HandleItemCurrentLoan(), userMW...))
+
+		// Kiosk Mode endpoints
+		r.Post("/kiosk/activate", chain.ToHandlerFunc(v1Ctrl.HandleKioskActivate(), userMW...))
+		r.Post("/kiosk/deactivate", chain.ToHandlerFunc(v1Ctrl.HandleKioskDeactivate(), userMW...))
+		r.Get("/kiosk/status", chain.ToHandlerFunc(v1Ctrl.HandleKioskStatus(), userMW...))
+		r.Post("/kiosk/unlock", chain.ToHandlerFunc(v1Ctrl.HandleKioskUnlock(), userMW...))
+		r.Post("/kiosk/lock", chain.ToHandlerFunc(v1Ctrl.HandleKioskLock(), userMW...))
 
 		// Asset-Like endpoints
 		assetMW := []errchain.Middleware{

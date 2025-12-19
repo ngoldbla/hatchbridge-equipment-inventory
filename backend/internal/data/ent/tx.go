@@ -30,6 +30,8 @@ type Tx struct {
 	ItemField *ItemFieldClient
 	// ItemTemplate is the client for interacting with the ItemTemplate builders.
 	ItemTemplate *ItemTemplateClient
+	// KioskSession is the client for interacting with the KioskSession builders.
+	KioskSession *KioskSessionClient
 	// Label is the client for interacting with the Label builders.
 	Label *LabelClient
 	// Loan is the client for interacting with the Loan builders.
@@ -184,6 +186,7 @@ func (tx *Tx) init() {
 	tx.Item = NewItemClient(tx.config)
 	tx.ItemField = NewItemFieldClient(tx.config)
 	tx.ItemTemplate = NewItemTemplateClient(tx.config)
+	tx.KioskSession = NewKioskSessionClient(tx.config)
 	tx.Label = NewLabelClient(tx.config)
 	tx.Loan = NewLoanClient(tx.config)
 	tx.Location = NewLocationClient(tx.config)

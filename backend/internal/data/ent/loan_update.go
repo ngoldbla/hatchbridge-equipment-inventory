@@ -148,6 +148,20 @@ func (_u *LoanUpdate) AddQuantity(v int) *LoanUpdate {
 	return _u
 }
 
+// SetKioskAction sets the "kiosk_action" field.
+func (_u *LoanUpdate) SetKioskAction(v bool) *LoanUpdate {
+	_u.mutation.SetKioskAction(v)
+	return _u
+}
+
+// SetNillableKioskAction sets the "kiosk_action" field if the given value is not nil.
+func (_u *LoanUpdate) SetNillableKioskAction(v *bool) *LoanUpdate {
+	if v != nil {
+		_u.SetKioskAction(*v)
+	}
+	return _u
+}
+
 // SetGroupID sets the "group" edge to the Group entity by ID.
 func (_u *LoanUpdate) SetGroupID(id uuid.UUID) *LoanUpdate {
 	_u.mutation.SetGroupID(id)
@@ -363,6 +377,9 @@ func (_u *LoanUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedQuantity(); ok {
 		_spec.AddField(loan.FieldQuantity, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.KioskAction(); ok {
+		_spec.SetField(loan.FieldKioskAction, field.TypeBool, value)
 	}
 	if _u.mutation.GroupCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -644,6 +661,20 @@ func (_u *LoanUpdateOne) AddQuantity(v int) *LoanUpdateOne {
 	return _u
 }
 
+// SetKioskAction sets the "kiosk_action" field.
+func (_u *LoanUpdateOne) SetKioskAction(v bool) *LoanUpdateOne {
+	_u.mutation.SetKioskAction(v)
+	return _u
+}
+
+// SetNillableKioskAction sets the "kiosk_action" field if the given value is not nil.
+func (_u *LoanUpdateOne) SetNillableKioskAction(v *bool) *LoanUpdateOne {
+	if v != nil {
+		_u.SetKioskAction(*v)
+	}
+	return _u
+}
+
 // SetGroupID sets the "group" edge to the Group entity by ID.
 func (_u *LoanUpdateOne) SetGroupID(id uuid.UUID) *LoanUpdateOne {
 	_u.mutation.SetGroupID(id)
@@ -889,6 +920,9 @@ func (_u *LoanUpdateOne) sqlSave(ctx context.Context) (_node *Loan, err error) {
 	}
 	if value, ok := _u.mutation.AddedQuantity(); ok {
 		_spec.AddField(loan.FieldQuantity, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.KioskAction(); ok {
+		_spec.SetField(loan.FieldKioskAction, field.TypeBool, value)
 	}
 	if _u.mutation.GroupCleared() {
 		edge := &sqlgraph.EdgeSpec{

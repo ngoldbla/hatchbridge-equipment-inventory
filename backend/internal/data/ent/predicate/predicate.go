@@ -33,6 +33,9 @@ type ItemField func(*sql.Selector)
 // ItemTemplate is the predicate function for itemtemplate builders.
 type ItemTemplate func(*sql.Selector)
 
+// KioskSession is the predicate function for kiosksession builders.
+type KioskSession func(*sql.Selector)
+
 // Label is the predicate function for label builders.
 type Label func(*sql.Selector)
 

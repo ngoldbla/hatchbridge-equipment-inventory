@@ -12,8 +12,10 @@ type contextKeys struct {
 }
 
 var (
-	ContextUser      = &contextKeys{name: "User"}
-	ContextUserToken = &contextKeys{name: "UserToken"}
+	ContextUser          = &contextKeys{name: "User"}
+	ContextUserToken     = &contextKeys{name: "UserToken"}
+	ContextKioskMode     = &contextKeys{name: "KioskMode"}
+	ContextKioskUnlocked = &contextKeys{name: "KioskUnlocked"}
 )
 
 type Context struct {
@@ -27,6 +29,12 @@ type Context struct {
 
 	// User is the acting user.
 	User *repo.UserOut
+
+	// IsKiosk indicates whether the session is in kiosk mode.
+	IsKiosk bool
+
+	// IsKioskUnlocked indicates whether the kiosk has temporary admin access.
+	IsKioskUnlocked bool
 }
 
 // NewContext is a helper function that returns the service context from the context.
@@ -34,10 +42,12 @@ type Context struct {
 func NewContext(ctx context.Context) Context {
 	user := UseUserCtx(ctx)
 	return Context{
-		Context: ctx,
-		UID:     user.ID,
-		GID:     user.GroupID,
-		User:    user,
+		Context:         ctx,
+		UID:             user.ID,
+		GID:             user.GroupID,
+		User:            user,
+		IsKiosk:         UseKioskModeCtx(ctx),
+		IsKioskUnlocked: UseKioskUnlockedCtx(ctx),
 	}
 }
 
@@ -46,6 +56,13 @@ func NewContext(ctx context.Context) Context {
 func SetUserCtx(ctx context.Context, user *repo.UserOut, token string) context.Context {
 	ctx = context.WithValue(ctx, ContextUser, user)
 	ctx = context.WithValue(ctx, ContextUserToken, token)
+	return ctx
+}
+
+// SetKioskCtx sets the kiosk mode state in the context.
+func SetKioskCtx(ctx context.Context, isKiosk bool, isUnlocked bool) context.Context {
+	ctx = context.WithValue(ctx, ContextKioskMode, isKiosk)
+	ctx = context.WithValue(ctx, ContextKioskUnlocked, isUnlocked)
 	return ctx
 }
 
@@ -63,4 +80,20 @@ func UseTokenCtx(ctx context.Context) string {
 		return val.(string)
 	}
 	return ""
+}
+
+// UseKioskModeCtx returns whether the session is in kiosk mode.
+func UseKioskModeCtx(ctx context.Context) bool {
+	if val := ctx.Value(ContextKioskMode); val != nil {
+		return val.(bool)
+	}
+	return false
+}
+
+// UseKioskUnlockedCtx returns whether the kiosk has temporary admin access.
+func UseKioskUnlockedCtx(ctx context.Context) bool {
+	if val := ctx.Value(ContextKioskUnlocked); val != nil {
+		return val.(bool)
+	}
+	return false
 }

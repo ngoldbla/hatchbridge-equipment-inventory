@@ -60,6 +60,9 @@ func (Borrower) Fields() []ent.Field {
 		field.Bool("is_active").
 			Default(true).
 			Comment("Whether borrower can currently check out equipment"),
+		field.Bool("self_registered").
+			Default(false).
+			Comment("Whether borrower registered themselves via kiosk self-service"),
 	}
 }
 
