@@ -10,7 +10,7 @@ const themeRef = ref<DaisyTheme>("hatchbridge");
 
 export function useTheme(): UseTheme {
   const preferences = useViewPreferences();
-  themeRef.value = preferences.value.theme;
+  themeRef.value = preferences.value.theme || "hatchbridge";
 
   const setTheme = (newTheme: DaisyTheme) => {
     preferences.value.theme = newTheme;
